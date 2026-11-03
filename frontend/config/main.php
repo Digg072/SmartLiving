@@ -47,6 +47,13 @@ return [
             ],
         ],
         */
+        'assetManager' => [
+            'bundles' => [
+                \yii\bootstrap5\BootstrapAsset::class => [
+                    'css' => [],
+                ],
+            ],
+        ],
     ],
     'params' => $params,
 ];
