@@ -63,7 +63,29 @@ class SignupForm extends Model
         $user->generateAuthKey();
         $user->generateEmailVerificationToken();
 
-        return $user->save() && $this->sendEmail($mailer, $user, $supportEmail, $appName);
+
+        if (!$user->save()) {
+            return false;
+        }
+
+        // Atribuir a role de utilizador após criar a conta.
+        $auth = Yii::$app->authManager;
+        $role = $auth->getRole('utilizador');
+
+        if ($role === null) {
+            throw new \RuntimeException(
+                'Role utilizador não encontrada. Executa php yii rbac/init.'
+            );
+        }
+
+        $auth->assign($role, $user->getId());
+
+        return $this->sendEmail(
+            $mailer,
+            $user,
+            $supportEmail,
+            $appName
+        );
     }
 
     /**
