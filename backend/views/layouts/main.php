@@ -115,12 +115,16 @@ AppAsset::register($this);
                             ['class' => 'nav-link']
                     ) ?>
 
-                    <span class="nav-link text-white-50">
-                        <span class="sb-nav-link-icon">
-                            <i class="fas fa-tags"></i>
-                        </span>
-                        Gestão de Categorias
-                    </span>
+
+                    <?= Html::a(
+                            '<span class="sb-nav-link-icon">
+                                <i class="fas fa-tags"></i>
+                            </span>
+                            Gestão de Categorias',
+                            ['/categoria/index'],
+                            ['class' => 'nav-link']
+                    ) ?>
+
 
                     <span class="nav-link text-white-50">
                         <span class="sb-nav-link-icon">
