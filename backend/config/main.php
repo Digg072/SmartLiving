@@ -13,6 +13,31 @@ return [
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
     'modules' => [],
+    'as access' => [
+        'class' => \yii\filters\AccessControl::class,
+        'rules' => [
+            // Login e página de erro acessíveis a todos
+            [
+                'allow' => true,
+                'controllers' => ['site'],
+                'actions' => ['login', 'error'],
+            ],
+
+            // Qualquer utilizador autenticado pode terminar sessão
+            [
+                'allow' => true,
+                'controllers' => ['site'],
+                'actions' => ['logout'],
+                'roles' => ['@'],
+            ],
+
+            // Apenas administradores podem aceder ao Back-Office
+            [
+                'allow' => true,
+                'roles' => ['administrador'],
+            ],
+        ],
+    ],
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
