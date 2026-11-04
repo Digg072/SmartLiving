@@ -106,12 +106,14 @@ AppAsset::register($this);
                     </div>
 
                     <!-- Menus apenas visuais nesta fase -->
-                    <span class="nav-link text-white-50">
-                        <span class="sb-nav-link-icon">
-                            <i class="fas fa-users"></i>
-                        </span>
-                        Gestão de Utilizadores
-                    </span>
+                    <?= Html::a(
+                            '<span class="sb-nav-link-icon">
+                                 <i class="fas fa-users"></i>
+                            </span>
+                            Gestão de Utilizadores',
+                            ['/user/index'],
+                            ['class' => 'nav-link']
+                    ) ?>
 
                     <span class="nav-link text-white-50">
                         <span class="sb-nav-link-icon">
