@@ -44,6 +44,29 @@ $this->title = $model->username;
                     'id',
                     'username',
                     'email:email',
+
+                    [
+                            'label' => 'Role',
+                            'value' => function () use ($model) {
+                                $roles = Yii::$app->authManager
+                                        ->getRolesByUser($model->id);
+
+                                if (isset($roles['administrador'])) {
+                                    return 'Administrador';
+                                }
+
+                                if (isset($roles['gestorAgregado'])) {
+                                    return 'Gestor de Agregado';
+                                }
+
+                                if (isset($roles['utilizador'])) {
+                                    return 'Utilizador';
+                                }
+
+                                return 'Sem role';
+                            },
+                    ],
+
                     [
                             'attribute' => 'status',
                             'value' => $model->status === User::STATUS_ACTIVE

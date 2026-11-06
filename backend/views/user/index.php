@@ -22,7 +22,7 @@ $this->title = 'Gestão de Utilizadores';
         <?= Html::a('Criar Utilizador', ['create'], [
                 'class' => 'btn btn-success',
         ]) ?>
-        
+
         <?= Html::a(
                 'Utilizadores Eliminados',
                 ['deleted'],
@@ -40,6 +40,27 @@ $this->title = 'Gestão de Utilizadores';
                     'email:email',
 
                     [
+                            'label' => 'Role',
+                            'value' => function ($model) {
+                                $roles = Yii::$app->authManager
+                                        ->getRolesByUser($model->id);
+
+                                if (isset($roles['administrador'])) {
+                                    return 'Administrador';
+                                }
+
+                                if (isset($roles['gestorAgregado'])) {
+                                    return 'Gestor de Agregado';
+                                }
+
+                                if (isset($roles['utilizador'])) {
+                                    return 'Utilizador';
+                                }
+
+                                return 'Sem role';
+                            },
+                    ],
+                    [
                             'attribute' => 'status',
                             'value' => function ($model) {
                                 return $model->status === User::STATUS_ACTIVE
@@ -51,6 +72,7 @@ $this->title = 'Gestão de Utilizadores';
                                     User::STATUS_INACTIVE => 'Inativo',
                             ],
                     ],
+
 
                     ['class' => ActionColumn::class],
             ],
