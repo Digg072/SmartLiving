@@ -11,6 +11,8 @@ use yii\filters\VerbFilter;
 use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
+use common\models\User;
+use yii\db\Query;
 
 /**
  * Site controller
@@ -63,9 +65,45 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex(): string
+
+    public function actionIndex()
     {
-        return $this->render('index');
+        // Total de utilizadores não eliminados
+        $totalUtilizadores = User::find()
+            ->where(['<>', 'status', User::STATUS_DELETED])
+            ->count();
+
+        // Total de agregados familiares
+        $totalAgregados = (new Query())
+            ->from('agregados_familiares')
+            ->count();
+
+        // Total de itens registados nas despensas
+        $totalItens = (new Query())
+            ->from('itens_despensa')
+            ->count();
+
+        // Número de itens associados a cada categoria
+        $estatisticasCategorias = (new Query())
+            ->select([
+                'categoria' => 'c.nome',
+                'total' => 'COUNT(i.id)',
+            ])
+            ->from(['c' => 'categorias'])
+            ->leftJoin(
+                ['i' => 'itens_despensa'],
+                'i.categoria_id = c.id'
+            )
+            ->groupBy(['c.id', 'c.nome'])
+            ->orderBy(['total' => SORT_DESC])
+            ->all();
+
+        return $this->render('index', [
+            'totalUtilizadores' => $totalUtilizadores,
+            'totalAgregados' => $totalAgregados,
+            'totalItens' => $totalItens,
+            'estatisticasCategorias' => $estatisticasCategorias,
+        ]);
     }
 
     /**
