@@ -22,6 +22,12 @@ $this->title = 'Gestão de Utilizadores';
         <?= Html::a('Criar Utilizador', ['create'], [
                 'class' => 'btn btn-success',
         ]) ?>
+        
+        <?= Html::a(
+                'Utilizadores Eliminados',
+                ['deleted'],
+                ['class' => 'btn btn-outline-secondary ms-2']
+        ) ?>
     </p>
 
     <?= GridView::widget([

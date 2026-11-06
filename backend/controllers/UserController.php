@@ -11,6 +11,7 @@ use yii\filters\VerbFilter;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
+use yii\data\ActiveDataProvider;
 
 class UserController extends Controller
 {
@@ -30,6 +31,7 @@ class UserController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['POST'],
+                    'restore' => ['POST'],
                 ],
             ],
         ];
@@ -133,6 +135,55 @@ class UserController extends Controller
         }
 
         return $this->redirect(['index']);
+    }
+
+
+    public function actionDeleted()
+    {
+        $dataProvider = new ActiveDataProvider([
+            'query' => User::find()
+                ->where(['status' => User::STATUS_DELETED])
+                ->orderBy(['id' => SORT_DESC]),
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+        ]);
+
+        return $this->render('deleted', [
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+
+    public function actionRestore($id)
+    {
+        $user = User::find()
+            ->where([
+                'id' => $id,
+                'status' => User::STATUS_DELETED,
+            ])
+            ->one();
+
+        if ($user === null) {
+            throw new NotFoundHttpException(
+                'Utilizador eliminado não encontrado.'
+            );
+        }
+
+        $user->status = User::STATUS_ACTIVE;
+
+        if (!$user->save(false)) {
+            throw new \RuntimeException(
+                'Não foi possível restaurar o utilizador.'
+            );
+        }
+
+        Yii::$app->session->setFlash(
+            'success',
+            'Utilizador restaurado com sucesso.'
+        );
+
+        return $this->redirect(['deleted']);
     }
 
     protected function findModel($id)
