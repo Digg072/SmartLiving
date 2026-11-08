@@ -8,6 +8,7 @@ use common\models\User;
 use Yii;
 use yii\base\Model;
 use yii\mail\MailerInterface;
+use common\models\Despensa;
 
 /**
  * Signup form
@@ -79,6 +80,8 @@ class SignupForm extends Model
         }
 
         $auth->assign($role, $user->getId());
+
+        Despensa::garantirPessoal((int) $user->id);
 
         return $this->sendEmail(
             $mailer,

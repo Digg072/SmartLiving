@@ -31,6 +31,7 @@ class DespensaController extends Controller
     public function actionIndex()
     {
         $userId = Yii::$app->user->id;
+        $despensaPessoal = Despensa::garantirPessoal((int) $userId);
 
         // Verificar se o utilizador pertence a um agregado
         $agregadoId = (new Query())
@@ -56,10 +57,7 @@ class DespensaController extends Controller
 
             $tipoDespensa = 'Familiar';
         } else {
-            $despensa = Despensa::find()
-                ->where(['utilizador_id' => $userId])
-                ->one();
-
+            $despensa = $despensaPessoal;
             $tipoDespensa = 'Pessoal';
         }
 

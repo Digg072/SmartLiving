@@ -54,4 +54,35 @@ class Despensa extends \yii\db\ActiveRecord
         ];
     }
 
+
+    public static function garantirPessoal(int $userId): self
+    {
+        // Procurar uma despensa pessoal existente
+        $despensa = self::find()
+            ->where([
+                'utilizador_id' => $userId,
+                'agregado_id' => null,
+            ])
+            ->one();
+
+        if ($despensa !== null) {
+            return $despensa;
+        }
+
+        // Criar apenas se ainda não existir
+        $despensa = new self();
+        $despensa->nome = 'Despensa Pessoal';
+        $despensa->utilizador_id = $userId;
+        $despensa->agregado_id = null;
+
+        if (!$despensa->save()) {
+            throw new \RuntimeException(
+                'Não foi possível criar a despensa pessoal.'
+            );
+        }
+
+        return $despensa;
+    }
+
+
 }
