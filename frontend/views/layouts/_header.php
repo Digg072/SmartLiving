@@ -57,9 +57,11 @@ use yii\helpers\Html;
 
                     <!-- Menus visuais da Fase 1 -->
                     <li class="nav-item">
-                        <span class="nav-link">
-                            Minha Despensa
-                        </span>
+                        <?= Html::a(
+                                'Minha Despensa',
+                                ['/despensa/index'],
+                                ['class' => 'nav-link']
+                        ) ?>
                     </li>
 
                     <li class="nav-item">
