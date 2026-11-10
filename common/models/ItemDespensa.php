@@ -30,14 +30,16 @@ class ItemDespensa extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['validade'], 'default', 'value' => null],
             [['quantidade'], 'default', 'value' => 0.00],
             [['nome', 'unidade', 'despensa_id', 'categoria_id'], 'required'],
-            [['quantidade'], 'number'],
-            [['validade'], 'safe'],
+            [['quantidade'], 'required'],
+            [['quantidade'], 'number', 'min' => 0],
+            [['validade'], 'default', 'value' => null],
+            [['validade'], 'date', 'format' => 'php:Y-m-d'],
             [['despensa_id', 'categoria_id'], 'integer'],
             [['nome'], 'string', 'max' => 150],
             [['unidade'], 'string', 'max' => 30],

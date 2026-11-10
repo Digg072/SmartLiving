@@ -43,6 +43,14 @@ $this->title = 'A Minha Despensa';
         </div>
 
         <h3>Itens da Despensa</h3>
+        <p class="mt-3">
+            <?= Html::a(
+                    'Adicionar Item',
+                    ['/item/create'],
+                    ['class' => 'btn btn-primary']
+            ) ?>
+        </p>
+
 
         <?php if (empty($itens)): ?>
 
@@ -72,7 +80,10 @@ $this->title = 'A Minha Despensa';
 
                         <tr>
                             <td>
-                                <?= Html::encode($item->nome) ?>
+                                <?= Html::a(
+                                        Html::encode($item->nome),
+                                        ['/item/view', 'id' => $item->id]
+                                ) ?>
                             </td>
 
                             <td>

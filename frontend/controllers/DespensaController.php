@@ -30,36 +30,16 @@ class DespensaController extends Controller
 
     public function actionIndex()
     {
-        $userId = Yii::$app->user->id;
-        $despensaPessoal = Despensa::garantirPessoal((int) $userId);
 
-        // Verificar se o utilizador pertence a um agregado
-        $agregadoId = (new Query())
-            ->select('agregado_id')
-            ->from('membros_agregado')
-            ->where(['utilizador_id' => $userId])
-            ->scalar();
+        $userId = (int) Yii::$app->user->id;
 
-        // Verificar também se é gestor de um agregado
-        if ($agregadoId === false) {
-            $agregadoId = (new Query())
-                ->select('id')
-                ->from('agregados_familiares')
-                ->where(['gestor_id' => $userId])
-                ->scalar();
-        }
+        $despensa = Despensa::obterAtivaPara($userId);
 
-        // Selecionar a despensa ativa
-        if ($agregadoId !== false) {
-            $despensa = Despensa::find()
-                ->where(['agregado_id' => $agregadoId])
-                ->one();
+        $tipoDespensa = $despensa !== null
+        && $despensa->agregado_id !== null
+            ? 'Familiar'
+            : 'Pessoal';
 
-            $tipoDespensa = 'Familiar';
-        } else {
-            $despensa = $despensaPessoal;
-            $tipoDespensa = 'Pessoal';
-        }
 
         // Consultar os itens da despensa selecionada
         $itens = $despensa !== null

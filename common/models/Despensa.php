@@ -85,4 +85,35 @@ class Despensa extends \yii\db\ActiveRecord
     }
 
 
+    public static function obterAtivaPara(int $userId): ?self
+    {
+        // Garantir que a despensa pessoal existe
+        $despensaPessoal = self::garantirPessoal($userId);
+
+        // Verificar se pertence a um agregado familiar
+        $agregadoId = (new \yii\db\Query())
+            ->select('agregado_id')
+            ->from('{{%membros_agregado}}')
+            ->where(['utilizador_id' => $userId])
+            ->scalar();
+
+        // Verificar também se é gestor
+        if ($agregadoId === false) {
+            $agregadoId = (new \yii\db\Query())
+                ->select('id')
+                ->from('{{%agregados_familiares}}')
+                ->where(['gestor_id' => $userId])
+                ->scalar();
+        }
+
+        // Se pertence a um agregado, usa a despensa familiar
+        if ($agregadoId !== false) {
+            return self::find()
+                ->where(['agregado_id' => $agregadoId])
+                ->one();
+        }
+
+        // Caso contrário, usa a despensa pessoal
+        return $despensaPessoal;
+    }
 }
