@@ -38,6 +38,7 @@ class ItemDespensa extends \yii\db\ActiveRecord
             [['nome', 'unidade', 'despensa_id', 'categoria_id'], 'required'],
             [['quantidade'], 'required'],
             [['quantidade'], 'number', 'min' => 0],
+            [['quantidade'], 'validarQuantidadeUnidade'],
             [['validade'], 'default', 'value' => null],
             [['validade'], 'date', 'format' => 'php:Y-m-d'],
             [['despensa_id', 'categoria_id'], 'integer'],
@@ -49,6 +50,26 @@ class ItemDespensa extends \yii\db\ActiveRecord
             [['categoria_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categoria::class, 'targetAttribute' => ['categoria_id' => 'id']],
             [['despensa_id'], 'exist', 'skipOnError' => true, 'targetClass' => Despensa::class, 'targetAttribute' => ['despensa_id' => 'id']],
         ];
+    }
+
+
+    public function validarQuantidadeUnidade($attribute, $params): void
+    {
+        $unidadesInteiras = ['un', 'pacote', 'lata'];
+
+        if (
+            in_array($this->unidade, $unidadesInteiras, true)
+            && is_numeric($this->$attribute)
+        ) {
+            $quantidade = (float) $this->$attribute;
+
+            if (abs($quantidade - round($quantidade)) > 0.000001) {
+                $this->addError(
+                    $attribute,
+                    'Esta unidade apenas permite quantidades inteiras.'
+                );
+            }
+        }
     }
 
     /**
