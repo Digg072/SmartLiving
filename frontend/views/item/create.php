@@ -14,6 +14,12 @@ $this->title = 'Adicionar Item';
 
     <h1><?= Html::encode($this->title) ?></h1>
 
+    <?php if (!empty($avisoDuplicado)): ?>
+        <div class="alert alert-warning mt-3">
+            <?= Html::encode($avisoDuplicado) ?>
+        </div>
+    <?php endif; ?>
+
     <?php if (empty($categorias)): ?>
 
         <div class="alert alert-info mt-3">
@@ -39,8 +45,17 @@ $this->title = 'Adicionar Item';
                 'step' => '0.01',
             ]) ?>
 
-        <?= $form->field($model, 'unidade')
-            ->textInput(['maxlength' => true]) ?>
+        <?= $form->field($model, 'unidade')->dropDownList([
+                'un' => 'Unidade (un)',
+                'kg' => 'Quilograma (kg)',
+                'g' => 'Grama (g)',
+                'L' => 'Litro (L)',
+                'ml' => 'Mililitro (ml)',
+                'pacote' => 'Pacote',
+                'lata' => 'Lata',
+        ], [
+                'prompt' => 'Seleciona uma unidade',
+        ]) ?>
 
         <?= $form->field($model, 'categoria_id')
             ->dropDownList($categorias, [
