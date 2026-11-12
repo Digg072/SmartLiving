@@ -15,6 +15,8 @@ $this->render('_head');
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>" class="h-100" data-bs-theme="light">
 <head>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <?php $this->head() ?>
     <title><?= Html::encode($this->title) ?></title>
 </head>

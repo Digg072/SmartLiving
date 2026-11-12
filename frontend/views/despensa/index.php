@@ -71,6 +71,7 @@ $this->title = 'A Minha Despensa';
                         <th>Unidade</th>
                         <th>Categoria</th>
                         <th>Validade</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                     </thead>
 
@@ -107,6 +108,54 @@ $this->title = 'A Minha Despensa';
                                     ? Html::encode($item->validade)
                                     : 'Sem validade' ?>
                             </td>
+
+                            <td class="text-end text-nowrap">
+
+                                <!-- Ver detalhes -->
+                                <?= Html::a(
+                                        '<i class="bi bi-eye"></i>',
+                                        ['/item/view', 'id' => $item->id],
+                                        [
+                                                'class' => 'btn btn-outline-primary btn-sm',
+                                                'title' => 'Ver detalhes',
+                                                'aria-label' => 'Ver detalhes de ' . $item->nome,
+                                        ]
+                                ) ?>
+
+                                <!-- Editar item -->
+                                <?= Html::a(
+                                        '<i class="bi bi-pencil-square"></i>',
+                                        ['/item/update', 'id' => $item->id],
+                                        [
+                                                'class' => 'btn btn-outline-warning btn-sm',
+                                                'title' => 'Editar item',
+                                                'aria-label' => 'Editar ' . $item->nome,
+                                        ]
+                                ) ?>
+
+                                <!-- Eliminar item -->
+                                <?= Html::beginForm(
+                                        ['/item/delete', 'id' => $item->id],
+                                        'post',
+                                        ['class' => 'd-inline']
+                                ) ?>
+
+                                <?= Html::submitButton(
+                                        '<i class="bi bi-trash"></i>',
+                                        [
+                                                'class' => 'btn btn-outline-danger btn-sm',
+                                                'title' => 'Eliminar item',
+                                                'aria-label' => 'Eliminar ' . $item->nome,
+                                                'data-confirm' =>
+                                                        'Tens a certeza que queres eliminar este item? '
+                                                        . 'O histórico de quantidades também será eliminado.',
+                                        ]
+                                ) ?>
+
+                                <?= Html::endForm() ?>
+
+                            </td>
+
                         </tr>
 
                     <?php endforeach; ?>
