@@ -10,9 +10,11 @@ use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
 
 class ItemController extends Controller
 {
+
     public function behaviors(): array
     {
         return [
@@ -26,9 +28,15 @@ class ItemController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['create', 'update'],
+                        'actions' => ['create', 'update', 'delete'],
                         'roles' => ['gerirItens'],
                     ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
                 ],
             ],
         ];
@@ -284,5 +292,48 @@ class ItemController extends Controller
             'model' => $model,
             'categorias' => $categorias,
         ]);
+    }
+
+
+    public function actionDelete($id)
+    {
+        // Obter a despensa ativa do utilizador
+        $despensa = Despensa::obterAtivaPara(
+            (int) Yii::$app->user->id
+        );
+
+        if ($despensa === null) {
+            throw new NotFoundHttpException(
+                'Despensa ativa não encontrada.'
+            );
+        }
+
+        // Procurar o item apenas na despensa ativa
+        $model = ItemDespensa::find()
+            ->where([
+                'id' => $id,
+                'despensa_id' => $despensa->id,
+            ])
+            ->one();
+
+        if ($model === null) {
+            throw new NotFoundHttpException(
+                'Item não encontrado nesta despensa.'
+            );
+        }
+
+        // Eliminar o item
+        if ($model->delete() === false) {
+            throw new \RuntimeException(
+                'Não foi possível eliminar o item.'
+            );
+        }
+
+        Yii::$app->session->setFlash(
+            'success',
+            'Item eliminado com sucesso.'
+        );
+
+        return $this->redirect(['/despensa/index']);
     }
 }

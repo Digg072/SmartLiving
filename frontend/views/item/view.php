@@ -93,6 +93,25 @@ $this->title = $model->nome;
             ['class' => 'btn btn-primary me-2']
     ) ?>
 
+
+    <?= Html::beginForm(
+            ['delete', 'id' => $model->id],
+            'post',
+            ['class' => 'd-inline']
+    ) ?>
+
+    <?= Html::submitButton(
+            'Eliminar Item',
+            [
+                    'class' => 'btn btn-danger me-2',
+                    'data-confirm' =>
+                            'Tens a certeza que queres eliminar este item? '
+                            . 'O histórico de quantidades também será eliminado.',
+            ]
+    ) ?>
+
+    <?= Html::endForm() ?>
+
     <?= Html::a(
         'Voltar à Despensa',
         ['/despensa/index'],
