@@ -49,6 +49,7 @@ class ItemDespensa extends \yii\db\ActiveRecord
             ]],
             [['categoria_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categoria::class, 'targetAttribute' => ['categoria_id' => 'id']],
             [['despensa_id'], 'exist', 'skipOnError' => true, 'targetClass' => Despensa::class, 'targetAttribute' => ['despensa_id' => 'id']],
+            ['nome', 'validarNomeDuplicadoNaEdicao'],
         ];
     }
 
@@ -106,7 +107,9 @@ class ItemDespensa extends \yii\db\ActiveRecord
         // Ignorar espaços e maiúsculas
         $nome = preg_replace('/[\s\p{Z}]+/u', '', $nome) ?? $nome;
 
-        return strtolower($nome);
+        $nome = strtolower($nome);
+
+        return preg_replace('/^(.{2,}[aeiou])s$/u', '$1', $nome) ?? $nome;
     }
 
     public static function adicionarOuAcumular(
@@ -232,6 +235,36 @@ class ItemDespensa extends \yii\db\ActiveRecord
             }
 
             throw $e;
+        }
+    }
+
+    public function validarNomeDuplicadoNaEdicao($attribute, $params): void
+    {
+        if ($this->isNewRecord) {
+            return;
+        }
+
+        $novoNome = self::normalizarNome($this->$attribute);
+        $nomeAnterior = self::normalizarNome($this->getOldAttribute('nome'));
+
+        if ($novoNome === $nomeAnterior) {
+            return;
+        }
+
+        $nomesNaDespensa = self::find()
+            ->select('nome')
+            ->where(['despensa_id' => $this->getOldAttribute('despensa_id')])
+            ->andWhere(['<>', 'id', $this->getOldPrimaryKey()])
+            ->column();
+
+        foreach ($nomesNaDespensa as $nome) {
+            if (self::normalizarNome($nome) === $novoNome) {
+                $this->addError(
+                    $attribute,
+                    'Já existe outro item com este nome na tua despensa.'
+                );
+                return;
+            }
         }
     }
 }

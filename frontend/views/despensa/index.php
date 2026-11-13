@@ -7,6 +7,11 @@ use yii\helpers\Html;
 /** @var string $tipoDespensa */
 /** @var common\models\ItemDespensa[] $itens */
 /** @var common\models\Categoria[] $categorias */
+/** @var frontend\controllers\DespensaController $porCategoria */
+/** @var frontend\controllers\DespensaController $hoje */
+/** @var frontend\controllers\DespensaController $limiteAviso */
+/** @var frontend\controllers\DespensaController $ordenacao */
+/** @var frontend\controllers\DespensaController $opcoesOrdenacao */
 
 $this->title = 'A Minha Despensa';
 
@@ -24,7 +29,6 @@ $this->title = 'A Minha Despensa';
         </div>
 
     <?php else: ?>
-
         <div class="card my-4">
             <div class="card-body">
 
@@ -42,14 +46,39 @@ $this->title = 'A Minha Despensa';
             </div>
         </div>
 
-        <h3>Itens da Despensa</h3>
-        <p class="mt-3">
-            <?= Html::a(
-                    'Adicionar Item',
-                    ['/item/create'],
-                    ['class' => 'btn btn-primary']
-            ) ?>
-        </p>
+        <div class="position-relative d-flex align-items-center gap-2 my-3">
+            <?= Html::a('Adicionar Item', ['/item/create'], [
+                    'class' => 'btn btn-primary',
+            ]) ?>
+
+            <details>
+                <summary class="btn btn-outline-secondary d-inline-flex align-items-center"
+                         title="Ordenar itens">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    <span class="visually-hidden">Opções de ordenação</span>
+                </summary>
+
+                <div class="position-absolute top-100 start-0 mt-2 p-3 bg-body border rounded shadow-sm"
+                     style="width: 15rem; max-width: 100%; z-index: 10;">
+                    <?= Html::beginForm(['/despensa/index'], 'get') ?>
+
+                    <?= Html::label('Ordenar por', 'ordenar-itens', [
+                            'class' => 'form-label fw-semibold',
+                    ]) ?>
+
+                    <?= Html::dropDownList('ordenar', $ordenacao, $opcoesOrdenacao, [
+                            'id' => 'ordenar-itens',
+                            'class' => 'form-select form-select-sm',
+                    ]) ?>
+
+                    <?= Html::submitButton('Aplicar', [
+                            'class' => 'btn btn-primary btn-sm w-100 mt-2',
+                    ]) ?>
+
+                    <?= Html::endForm() ?>
+                </div>
+            </details>
+        </div>
 
 
         <?php if (empty($itens)): ?>
@@ -77,15 +106,24 @@ $this->title = 'A Minha Despensa';
 
                     <tbody>
 
+                    <?php $categoriaAnterior = null; ?>
+
                     <?php foreach ($itens as $item): ?>
+                        <?php $categoriaId = (int) $item->categoria_id; ?>
+
+                        <?php if ($porCategoria && $categoriaId !== $categoriaAnterior): ?>
+                            <?php $categoriaAnterior = $categoriaId; ?>
+                            <tr class="table-light">
+                                <th colspan="6">
+                                    <?= Html::encode($categorias[$categoriaId]->nome ?? 'Sem categoria') ?>
+                                </th>
+                            </tr>
+                        <?php endif; ?>
+
+                        <!-- A linha existente do item continua aqui. -->
 
                         <tr>
-                            <td>
-                                <?= Html::a(
-                                        Html::encode($item->nome),
-                                        ['/item/view', 'id' => $item->id]
-                                ) ?>
-                            </td>
+                            <td><?= Html::encode($item->nome) ?></td>
 
                             <td>
                                 <?= Html::encode($item->quantidade) ?>
@@ -104,9 +142,21 @@ $this->title = 'A Minha Despensa';
                             </td>
 
                             <td>
-                                <?= $item->validade !== null
-                                    ? Html::encode($item->validade)
-                                    : 'Sem validade' ?>
+                                <?php $validade = $item->validade; ?>
+
+                                <?php if ($validade === null): ?>
+                                    <span class="text-muted">Sem validade</span>
+                                <?php else: ?>
+                                    <?= Html::encode($validade) ?>
+
+                                    <?php if ($validade < $hoje): ?>
+                                        <span class="badge bg-danger ms-1">Expirado</span>
+                                    <?php elseif ($validade === $hoje): ?>
+                                        <span class="badge ms-1" style="background-color: #fd7e14; color: #fff;">Expira hoje</span>
+                                    <?php elseif ($validade <= $limiteAviso): ?>
+                                        <span class="badge bg-warning text-dark ms-1">Expira em breve</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
 
                             <td class="text-end text-nowrap">
