@@ -23,7 +23,23 @@ class UserController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'roles' => ['gerirUtilizadores'],
+                        'actions' => ['index', 'view', 'deleted'],
+                        'roles' => ['consultarUtilizadores'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['create'],
+                        'roles' => ['criarUtilizador'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['update', 'restore'],
+                        'roles' => ['editarUtilizador'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete'],
+                        'roles' => ['eliminarUtilizador'],
                     ],
                 ],
             ],

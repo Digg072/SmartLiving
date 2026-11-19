@@ -33,151 +33,70 @@ AppAsset::register($this);
     <?php $this->head() ?>
 </head>
 
-<body class="sb-nav-fixed">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 <?php $this->beginBody() ?>
 
-<!-- Barra superior -->
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+<div class="app-wrapper">
+    <nav class="app-header navbar navbar-expand bg-body">
+        <div class="container-fluid">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    data-lte-toggle="sidebar"
+                    aria-label="Mostrar ou ocultar o menu lateral">
+                ☰
+            </button>
 
-    <?= Html::a(
-            'SmartLiving BO',
-            ['/site/index'],
-            ['class' => 'navbar-brand ps-3']
-    ) ?>
+            <span class="ms-3 fw-semibold">Back-Office</span>
 
-    <button class="btn btn-link btn-sm order-1 order-lg-0
-                   me-4 me-lg-0"
-            id="sidebarToggle"
-            type="button"
-            aria-label="Mostrar ou ocultar menu">
-        <i class="fas fa-bars"></i>
-    </button>
+            <?php if (!Yii::$app->user->isGuest): ?>
+                <?= Html::beginForm(['/site/logout'], 'post', ['class' => 'ms-auto']) ?>
+                <?= Html::submitButton('Sair', ['class' => 'btn btn-outline-secondary btn-sm']) ?>
+                <?= Html::endForm() ?>
+            <?php endif; ?>
+        </div>
+    </nav>
 
-    <div class="ms-auto me-4 d-flex align-items-center gap-3">
+    <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+        <div class="sidebar-brand">
+            <?= Html::a('SmartLiving', ['/site/index'], ['class' => 'brand-link']) ?>
+        </div>
 
-        <?php if (!Yii::$app->user->isGuest): ?>
+        <div class="sidebar-wrapper">
+            <nav class="mt-2" aria-label="Menu do Back-Office">
+                <?= \yii\widgets\Menu::widget([
+                        'options' => ['class' => 'nav sidebar-menu flex-column'],
+                        'itemOptions' => ['class' => 'nav-item'],
+                        'linkTemplate' => '<a href="{url}" class="nav-link"><p>{label}</p></a>',
+                        'items' => [
+                                ['label' => 'Dashboard', 'url' => ['/site/index']],
+                                [
+                                        'label' => 'Utilizadores',
+                                        'url' => ['/user/index'],
+                                        'visible' => Yii::$app->user->can('consultarUtilizadores'),
+                                ],
+                                [
+                                        'label' => 'Categorias',
+                                        'url' => ['/categoria/index'],
+                                        'visible' => Yii::$app->user->can('consultarCategorias'),
+                                ],
+                        ],
+                ]) ?>
+            </nav>
+        </div>
+    </aside>
 
-            <span class="text-white small">
-                <?= Html::encode(
-                        Yii::$app->user->identity->username
-                ) ?>
-            </span>
-
-            <?= Html::beginForm(['/site/logout'], 'post', [
-                    'class' => 'm-0'
-            ]) ?>
-
-            <?= Html::submitButton('Sair', [
-                    'class' => 'btn btn-outline-light btn-sm'
-            ]) ?>
-
-            <?= Html::endForm() ?>
-
-        <?php endif; ?>
-
-    </div>
-</nav>
-
-<div id="layoutSidenav">
-
-    <!-- Menu lateral -->
-    <div id="layoutSidenav_nav">
-
-        <nav class="sb-sidenav accordion sb-sidenav-dark"
-             id="sidenavAccordion">
-
-            <div class="sb-sidenav-menu">
-                <div class="nav">
-
-                    <div class="sb-sidenav-menu-heading">
-                        Principal
-                    </div>
-
-                    <?= Html::a(
-                            '<div class="sb-nav-link-icon">
-                            <i class="fas fa-tachometer-alt"></i>
-                        </div>Dashboard',
-                            ['/site/index'],
-                            ['class' => 'nav-link']
-                    ) ?>
-
-                    <div class="sb-sidenav-menu-heading">
-                        Administração
-                    </div>
-
-                    <!-- Menus apenas visuais nesta fase -->
-                    <?= Html::a(
-                            '<span class="sb-nav-link-icon">
-                                 <i class="fas fa-users"></i>
-                            </span>
-                            Gestão de Utilizadores',
-                            ['/user/index'],
-                            ['class' => 'nav-link']
-                    ) ?>
-
-
-                    <?= Html::a(
-                            '<span class="sb-nav-link-icon">
-                                <i class="fas fa-tags"></i>
-                            </span>
-                            Gestão de Categorias',
-                            ['/categoria/index'],
-                            ['class' => 'nav-link']
-                    ) ?>
-
-
-                    <span class="nav-link text-white-50">
-                        <span class="sb-nav-link-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </span>
-                        Estatísticas
-                    </span>
-
-                </div>
-            </div>
-
-            <div class="sb-sidenav-footer">
-                <div class="small">SmartLiving</div>
-                Painel Administrativo
-            </div>
-
-        </nav>
-    </div>
-
-    <!-- Conteúdo principal -->
-    <div id="layoutSidenav_content">
-
-        <main>
-            <div class="container-fluid px-4 py-4">
-
-                <?= Alert::widget() ?>
-
+    <main class="app-main">
+        <div class="app-content py-4">
+            <div class="container-fluid">
+                <?= \common\widgets\Alert::widget() ?>
                 <?= $content ?>
-
             </div>
-        </main>
+        </div>
+    </main>
 
-        <footer class="py-4 bg-light mt-auto">
-            <div class="container-fluid px-4">
-
-                <div class="d-flex align-items-center
-                            justify-content-between small">
-
-                    <div class="text-muted">
-                        Copyright &copy; SmartLiving
-                        <?= date('Y') ?>
-                    </div>
-
-                    <div class="text-muted">
-                        Back-Office
-                    </div>
-
-                </div>
-
-            </div>
-        </footer>
-
-    </div>
+    <footer class="app-footer">
+        SmartLiving — Gestão da Despensa de Casa
+    </footer>
 </div>
 
 <?php $this->endBody() ?>

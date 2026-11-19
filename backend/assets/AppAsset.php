@@ -23,11 +23,11 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
-        'themes/sb-admin/css/styles.css',
+        'themes/adminlte/css/adminlte.min.css',
         'css/site.css',
     ];
     public $js = [
-        'themes/sb-admin/js/scripts.js',
+        'themes/adminlte/js/adminlte.min.js',
     ];
     public $depends = [
         YiiAsset::class,

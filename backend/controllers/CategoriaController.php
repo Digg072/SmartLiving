@@ -28,7 +28,23 @@ class CategoriaController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'roles' => ['gerirCategorias'],
+                        'actions' => ['index', 'view'],
+                        'roles' => ['consultarCategorias'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['create'],
+                        'roles' => ['criarCategoria'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['update'],
+                        'roles' => ['editarCategoria'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete'],
+                        'roles' => ['eliminarCategoria'],
                     ],
                 ],
             ],

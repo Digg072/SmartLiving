@@ -30,6 +30,11 @@ class DespensaController extends Controller
 
     public function actionIndex()
     {
+        if (!Yii::$app->user->can('consultarItens')) {
+            throw new \yii\web\ForbiddenHttpException(
+                'Não tens permissão para consultar os itens da despensa.'
+            );
+        }
 
         $userId = (int) Yii::$app->user->id;
 

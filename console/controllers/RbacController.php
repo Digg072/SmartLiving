@@ -14,7 +14,10 @@ class RbacController extends Controller
         $roles = [
             'utilizador' => [
                 'consultarDespensa',
-                'gerirItens',
+                'criarItem',
+                'consultarItens',
+                'editarItem',
+                'eliminarItem',
                 'consultarHistoricoStock',
                 'consultarCategorias',
                 'criarAgregado',
@@ -22,12 +25,20 @@ class RbacController extends Controller
                 'gerirProprioPerfil',
             ],
             'gestorAgregado' => [
-                'gerirAgregado',
-                'gerirMembrosAgregado',
+                'editarAgregado',
+                'eliminarAgregado',
+                'adicionarMembroAgregado',
+                'removerMembroAgregado',
             ],
             'administrador' => [
-                'gerirCategorias',
-                'gerirUtilizadores',
+                'criarCategoria',
+                'editarCategoria',
+                'eliminarCategoria',
+                'consultarCategorias',
+                'criarUtilizador',
+                'editarUtilizador',
+                'eliminarUtilizador',
+                'consultarUtilizadores',
                 'consultarEstatisticas',
             ],
         ];

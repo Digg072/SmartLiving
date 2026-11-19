@@ -24,12 +24,22 @@ class ItemController extends Controller
                     [
                         'allow' => true,
                         'actions' => ['view'],
-                        'roles' => ['consultarDespensa'],
+                        'roles' => ['consultarItens'],
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['create', 'update', 'delete'],
-                        'roles' => ['gerirItens'],
+                        'actions' => ['create'],
+                        'roles' => ['criarItem'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['update'],
+                        'roles' => ['editarItem'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete'],
+                        'roles' => ['eliminarItem'],
                     ],
                 ],
             ],
