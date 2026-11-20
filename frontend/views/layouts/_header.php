@@ -65,9 +65,11 @@ use yii\helpers\Html;
                     </li>
 
                     <li class="nav-item">
-                        <span class="nav-link">
-                            Agregado Familiar
-                        </span>
+                        <?= Html::a(
+                                'Agregado Familiar',
+                                ['/agregado/index'],
+                                ['class' => 'nav-link']
+                        )?>
                     </li>
 
                     <li class="nav-item">
