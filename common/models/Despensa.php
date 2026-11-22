@@ -36,7 +36,7 @@ class Despensa extends \yii\db\ActiveRecord
             [['nome'], 'string', 'max' => 150],
             [['utilizador_id'], 'unique'],
             [['agregado_id'], 'unique'],
-            [['agregado_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgregadosFamiliares::class, 'targetAttribute' => ['agregado_id' => 'id']],
+            [['agregado_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgregadoFamiliar::class, 'targetAttribute' => ['agregado_id' => 'id']],
             [['utilizador_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['utilizador_id' => 'id']],
         ];
     }
