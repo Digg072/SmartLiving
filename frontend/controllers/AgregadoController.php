@@ -43,6 +43,11 @@ class AgregadoController extends \yii\web\Controller
                         'actions' => ['leave'],
                         'roles' => ['sairAgregado'],
                     ],
+                    [
+                        'allow' => true,
+                        'actions' => ['update'],
+                        'roles' => ['editarAgregado'],
+                    ],
                 ],
             ],
             'verbs' => [
@@ -198,5 +203,42 @@ class AgregadoController extends \yii\web\Controller
         }
 
         return $this->redirect(['index']);
+    }
+
+    public function actionUpdate()
+    {
+        $utilizadorId = (int) Yii::$app->user->id;
+
+        $agregado = AgregadoFamiliar::doUtilizador($utilizadorId);
+
+        if (
+            $agregado === null ||
+            (int) $agregado->gestor_id !== $utilizadorId
+        ) {
+            throw new \yii\web\ForbiddenHttpException(
+                'Apenas o gestor pode editar o agregado familiar.'
+            );
+        }
+
+        if (Yii::$app->request->isPost) {
+            $dados = Yii::$app->request->post($agregado->formName(), []);
+
+            $agregado->nome = isset($dados['nome']) && is_string($dados['nome'])
+                ? trim($dados['nome'])
+                : '';
+
+            if ($agregado->save()) {
+                Yii::$app->session->setFlash(
+                    'success',
+                    'Nome do agregado familiar atualizado com sucesso.'
+                );
+
+                return $this->redirect(['index']);
+            }
+        }
+
+        return $this->render('update', [
+            'model' => $agregado,
+        ]);
     }
 }

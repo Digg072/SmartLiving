@@ -16,6 +16,20 @@ $this->title = 'Agregado Familiar';
     <?php endif; ?>
 <?php else: ?>
     <h2><?= Html::encode($agregado->nome) ?></h2>
+
+    <?php if (
+            (int) $agregado->gestor_id === (int) Yii::$app->user->id &&
+            Yii::$app->user->can('editarAgregado')
+    ): ?>
+
+        <?= Html::a(
+                'Editar nome',
+                ['update'],
+                ['class' => 'btn btn-outline-primary mb-3']
+        ) ?>
+
+    <?php endif; ?>
+
     <p>A despensa deste agregado é partilhada pelos seus membros.</p>
 
     <?= Html::a('Abrir despensa partilhada', ['/despensa/index'], [
