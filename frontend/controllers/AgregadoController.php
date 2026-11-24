@@ -33,6 +33,23 @@ class AgregadoController extends \yii\web\Controller
                         'actions' => ['add-member'],
                         'roles' => ['adicionarMembroAgregado'],
                     ],
+                    [
+                        'allow' => true,
+                        'actions' => ['remove-member'],
+                        'roles' => ['removerMembroAgregado'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['leave'],
+                        'roles' => ['sairAgregado'],
+                    ],
+                ],
+            ],
+            'verbs' => [
+                'class' => \yii\filters\VerbFilter::class,
+                'actions' => [
+                    'remove-member' => ['POST'],
+                    'leave' => ['POST'],
                 ],
             ],
         ];
@@ -120,5 +137,66 @@ class AgregadoController extends \yii\web\Controller
             'model' => $model,
             'agregado' => $agregado,
         ]);
+    }
+
+    public function actionRemoveMember($id)
+    {
+        $gestorId = (int) Yii::$app->user->id;
+
+        $agregado = AgregadoFamiliar::doUtilizador($gestorId);
+
+        if (
+            $agregado === null ||
+            (int) $agregado->gestor_id !== $gestorId
+        ) {
+            throw new ForbiddenHttpException(
+                'Apenas o gestor pode remover membros.'
+            );
+        }
+
+        if ($agregado->retirarMembro((int) $id)) {
+            Yii::$app->session->setFlash(
+                'success',
+                'Membro removido do agregado familiar.'
+            );
+        } else {
+            Yii::$app->session->setFlash(
+                'error',
+                'Não foi possível remover o membro.'
+            );
+        }
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionLeave()
+    {
+        $utilizadorId = (int) Yii::$app->user->id;
+
+        $agregado = AgregadoFamiliar::doUtilizador($utilizadorId);
+
+        if ($agregado === null) {
+            return $this->redirect(['index']);
+        }
+
+        if ((int) $agregado->gestor_id === $utilizadorId) {
+            throw new ForbiddenHttpException(
+                'O gestor não pode sair do agregado familiar.'
+            );
+        }
+
+        if ($agregado->retirarMembro($utilizadorId)) {
+            Yii::$app->session->setFlash(
+                'success',
+                'Saíste do agregado familiar. Voltaste à tua despensa pessoal.'
+            );
+        } else {
+            Yii::$app->session->setFlash(
+                'error',
+                'Não foi possível sair do agregado familiar.'
+            );
+        }
+
+        return $this->redirect(['index']);
     }
 }

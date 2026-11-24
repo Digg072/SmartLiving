@@ -23,6 +23,7 @@ class RbacController extends Controller
                 'criarAgregado',
                 'consultarAgregado',
                 'gerirProprioPerfil',
+                'sairAgregado',
             ],
             'gestorAgregado' => [
                 'editarAgregado',

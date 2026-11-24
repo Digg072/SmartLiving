@@ -26,18 +26,49 @@ $this->title = 'Agregado Familiar';
 
     <h3>Membros do agregado</h3>
 
+    <?php
+    $utilizadorAtual = (int) Yii::$app->user->id;
+
+    $eGestor = $utilizadorAtual === (int) $agregado->gestor_id;
+    ?>
+
     <ul class="list-group mb-4">
 
         <?php foreach ($membros as $membro): ?>
 
-            <li class="list-group-item">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
 
-                <?= Html::encode($membro->username) ?>
+                <div>
+                    <?= Html::encode($membro->username) ?>
 
-                <?php if ((int) $membro->id === (int) $agregado->gestor_id): ?>
-                    <span class="badge bg-primary ms-2">
-                    Gestor
-                </span>
+                    <?php if ((int) $membro->id === (int) $agregado->gestor_id): ?>
+                        <span class="badge bg-primary ms-2">
+                        Gestor
+                    </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (
+                        $eGestor &&
+                        (int) $membro->id !== $utilizadorAtual &&
+                        Yii::$app->user->can('removerMembroAgregado')
+                ): ?>
+
+                    <?= Html::beginForm(
+                            ['remove-member', 'id' => $membro->id],
+                            'post',
+                            [
+                                    'class' => 'd-inline',
+                                    'onsubmit' => "return confirm('Tens a certeza de que queres remover este membro?');",
+                            ]
+                    ) ?>
+
+                    <?= Html::submitButton('Remover', [
+                            'class' => 'btn btn-sm btn-outline-danger',
+                    ]) ?>
+
+                    <?= Html::endForm() ?>
+
                 <?php endif; ?>
 
             </li>
@@ -46,16 +77,29 @@ $this->title = 'Agregado Familiar';
 
     </ul>
 
-    <?php if (
-            (int) $agregado->gestor_id === (int) Yii::$app->user->id &&
-            Yii::$app->user->can('adicionarMembroAgregado')
-    ): ?>
+    <?php if ($eGestor && Yii::$app->user->can('adicionarMembroAgregado')): ?>
 
         <?= Html::a(
                 'Adicionar membro',
                 ['add-member'],
                 ['class' => 'btn btn-primary']
         ) ?>
+
+    <?php elseif (!$eGestor && Yii::$app->user->can('sairAgregado')): ?>
+
+        <?= Html::beginForm(
+                ['leave'],
+                'post',
+                [
+                        'onsubmit' => "return confirm('Tens a certeza de que queres sair do agregado familiar?');",
+                ]
+        ) ?>
+
+        <?= Html::submitButton('Sair do agregado', [
+                'class' => 'btn btn-outline-danger',
+        ]) ?>
+
+        <?= Html::endForm() ?>
 
     <?php endif; ?>
 <?php endif; ?>

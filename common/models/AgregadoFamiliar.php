@@ -124,4 +124,46 @@ class AgregadoFamiliar extends \yii\db\ActiveRecord
             return true;
         });
     }
+
+    public function retirarMembro(int $utilizadorId): bool
+    {
+        // O gestor não pode ser removido nem sair por esta operação.
+        if ((int) $this->gestor_id === $utilizadorId) {
+            return false;
+        }
+
+        return self::getDb()->transaction(
+            function ($db) use ($utilizadorId): bool {
+
+                $membro = MembroAgregado::findOne([
+                    'agregado_id' => $this->id,
+                    'utilizador_id' => $utilizadorId,
+                ]);
+
+                if ($membro === null) {
+                    return false;
+                }
+
+                if ($membro->delete() !== 1) {
+                    return false;
+                }
+
+                // Recupera a despensa pessoal ou cria-a, se necessário.
+                Despensa::garantirPessoal($utilizadorId);
+
+                if (!Despensa::find()
+                    ->where([
+                        'utilizador_id' => $utilizadorId,
+                        'agregado_id' => null,
+                    ])
+                    ->exists()) {
+                    throw new \RuntimeException(
+                        'Não foi possível recuperar a despensa pessoal.'
+                    );
+                }
+
+                return true;
+            }
+        );
+    }
 }
