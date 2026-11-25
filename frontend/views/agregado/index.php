@@ -5,9 +5,6 @@ use yii\helpers\Html;
 
 $this->title = 'Agregado Familiar';
 ?>
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
 <?php if ($agregado === null): ?>
     <p>Ainda não pertences a um agregado familiar.</p>
 
@@ -15,7 +12,7 @@ $this->title = 'Agregado Familiar';
         <?= Html::a('Criar agregado', ['create'], ['class' => 'btn btn-primary']) ?>
     <?php endif; ?>
 <?php else: ?>
-    <h2><?= Html::encode($agregado->nome) ?></h2>
+    <h1><?= Html::encode($agregado->nome) ?></h1>
 
     <?php if (
             (int) $agregado->gestor_id === (int) Yii::$app->user->id &&
@@ -111,6 +108,39 @@ $this->title = 'Agregado Familiar';
 
         <?= Html::submitButton('Sair do agregado', [
                 'class' => 'btn btn-outline-danger',
+        ]) ?>
+
+        <?= Html::endForm() ?>
+
+    <?php endif; ?>
+
+    <?php if (
+            $eGestor &&
+            Yii::$app->user->can('eliminarAgregado')
+    ): ?>
+
+        <hr class="my-4">
+
+        <h4 class="text-danger">Eliminar agregado familiar</h4>
+
+        <p class="text-muted">
+            Esta ação é permanente. Todos os membros serão removidos
+            do agregado e a despensa familiar, incluindo os seus itens
+            e histórico, será eliminada.
+            As despensas pessoais serão preservadas.
+        </p>
+
+        <?= Html::beginForm(
+                ['delete'],
+                'post',
+                [
+                        'onsubmit' =>
+                                "return confirm('Tens a certeza de que queres eliminar o agregado familiar? Esta ação é irreversível e apagará todos os itens e movimentos da despensa familiar.');",
+                ]
+        ) ?>
+
+        <?= Html::submitButton('Eliminar agregado', [
+                'class' => 'btn btn-danger',
         ]) ?>
 
         <?= Html::endForm() ?>

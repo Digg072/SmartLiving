@@ -166,4 +166,118 @@ class AgregadoFamiliar extends \yii\db\ActiveRecord
             }
         );
     }
+
+    public function eliminarComDados(): bool
+    {
+        $agregadoId = (int) $this->id;
+        $gestorId = (int) $this->gestor_id;
+
+        return self::getDb()->transaction(
+            function ($db) use ($agregadoId, $gestorId): bool {
+
+                // Bloquear o agregado durante a eliminação.
+                $gestorAtual = $db->createCommand(
+                    'SELECT gestor_id
+                 FROM {{%agregados_familiares}}
+                 WHERE id = :id
+                 FOR UPDATE',
+                    [':id' => $agregadoId]
+                )->queryScalar();
+
+                if ($gestorAtual === false ||
+                    (int) $gestorAtual !== $gestorId) {
+                    return false;
+                }
+
+                // Obter os utilizadores associados ao agregado.
+                $membroIds = MembroAgregado::find()
+                    ->select('utilizador_id')
+                    ->where(['agregado_id' => $agregadoId])
+                    ->column();
+
+                $membroIds[] = $gestorId;
+
+                // Garantir as despensas pessoais antes da remoção.
+                foreach (array_unique(array_map('intval', $membroIds)) as $id) {
+                    Despensa::garantirPessoal($id);
+
+                    if (!Despensa::find()
+                        ->where([
+                            'utilizador_id' => $id,
+                            'agregado_id' => null,
+                        ])
+                        ->exists()) {
+                        throw new \RuntimeException(
+                            'Não foi possível garantir a despensa pessoal.'
+                        );
+                    }
+                }
+
+                // Obter as despensas que pertencem ao agregado.
+                $despensaIds = Despensa::find()
+                    ->select('id')
+                    ->where(['agregado_id' => $agregadoId])
+                    ->column();
+
+                foreach ($despensaIds as $despensaId) {
+                    $despensaId = (int) $despensaId;
+
+                    // Apagar movimentos dos itens familiares.
+                    $db->createCommand(
+                        'DELETE FROM {{%movimentos_stocks}}
+                     WHERE item_id IN (
+                         SELECT id
+                         FROM {{%itens_despensa}}
+                         WHERE despensa_id = :despensa
+                     )',
+                        [':despensa' => $despensaId]
+                    )->execute();
+
+                    // Apagar itens familiares.
+                    $db->createCommand()->delete(
+                        '{{%itens_despensa}}',
+                        ['despensa_id' => $despensaId]
+                    )->execute();
+
+                    // Apagar a despensa familiar.
+                    $db->createCommand()->delete(
+                        '{{%despensas}}',
+                        ['id' => $despensaId]
+                    )->execute();
+                }
+
+                // Remover as associações dos membros.
+                MembroAgregado::deleteAll([
+                    'agregado_id' => $agregadoId,
+                ]);
+
+                // Eliminar o próprio agregado.
+                if ($this->delete() !== 1) {
+                    throw new \RuntimeException(
+                        'Não foi possível eliminar o agregado.'
+                    );
+                }
+
+                // Retirar a role de gestor ao antigo gestor.
+                $auth = \Yii::$app->authManager;
+                $role = $auth->getRole('gestorAgregado');
+
+                if ($role === null) {
+                    throw new \RuntimeException(
+                        'A role gestorAgregado não existe.'
+                    );
+                }
+
+                if ($auth->getAssignment($role->name, $gestorId) !== null) {
+                    if (!$auth->revoke($role, $gestorId)) {
+                        throw new \RuntimeException(
+                            'Não foi possível retirar a role de gestor.'
+                        );
+                    }
+                }
+
+                return true;
+            }
+        );
+    }
 }

@@ -48,6 +48,11 @@ class AgregadoController extends \yii\web\Controller
                         'actions' => ['update'],
                         'roles' => ['editarAgregado'],
                     ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete'],
+                        'roles' => ['eliminarAgregado'],
+                    ],
                 ],
             ],
             'verbs' => [
@@ -55,6 +60,7 @@ class AgregadoController extends \yii\web\Controller
                 'actions' => [
                     'remove-member' => ['POST'],
                     'leave' => ['POST'],
+                    'delete' => ['POST'],
                 ],
             ],
         ];
@@ -240,5 +246,44 @@ class AgregadoController extends \yii\web\Controller
         return $this->render('update', [
             'model' => $agregado,
         ]);
+    }
+
+    public function actionDelete()
+    {
+        $utilizadorId = (int) Yii::$app->user->id;
+
+        $agregado = AgregadoFamiliar::doUtilizador($utilizadorId);
+
+        if (
+            $agregado === null ||
+            (int) $agregado->gestor_id !== $utilizadorId
+        ) {
+            throw new \yii\web\ForbiddenHttpException(
+                'Apenas o gestor pode eliminar o agregado familiar.'
+            );
+        }
+
+        try {
+            if ($agregado->eliminarComDados()) {
+                Yii::$app->session->setFlash(
+                    'success',
+                    'Agregado familiar eliminado com sucesso.'
+                );
+            } else {
+                Yii::$app->session->setFlash(
+                    'error',
+                    'Não foi possível eliminar o agregado familiar.'
+                );
+            }
+        } catch (\Throwable $e) {
+            Yii::error($e, __METHOD__);
+
+            Yii::$app->session->setFlash(
+                'error',
+                'Ocorreu um erro ao eliminar o agregado familiar.'
+            );
+        }
+
+        return $this->redirect(['index']);
     }
 }
