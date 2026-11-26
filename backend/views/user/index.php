@@ -40,24 +40,23 @@ $this->title = 'Gestão de Utilizadores';
                     'email:email',
 
                     [
-                            'label' => 'Role',
+                            'label' => 'Cargos',
+                            'format' => 'raw',
                             'value' => function ($model) {
                                 $roles = Yii::$app->authManager
                                         ->getRolesByUser($model->id);
 
-                                if (isset($roles['administrador'])) {
-                                    return 'Administrador';
-                                }
+                                $badges = array_map(function ($role) {
+                                    return \yii\helpers\Html::tag(
+                                            'span',
+                                            \yii\helpers\Html::encode($role->name),
+                                            ['class' => 'badge bg-primary me-1']
+                                    );
+                                }, $roles);
 
-                                if (isset($roles['gestorAgregado'])) {
-                                    return 'Gestor de Agregado';
-                                }
-
-                                if (isset($roles['utilizador'])) {
-                                    return 'Utilizador';
-                                }
-
-                                return 'Sem role';
+                                return $badges
+                                        ? implode(' ', $badges)
+                                        : 'Sem cargos';
                             },
                     ],
                     [

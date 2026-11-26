@@ -1,149 +1,399 @@
 <?php
+
 use yii\helpers\Html;
-/** @var frontend\controllers\AgregadoController $agregado */
-/** @var frontend\controllers\AgregadoController $membros */
 
-$this->title = 'Agregado Familiar';
+/** @var $agregado \common\models\AgregadoFamiliar|null */
+/** @var $membros \common\models\User[] */
+/** @var $historico array */
+
+$this->title = 'Meu Agregado Familiar';
+
 ?>
-<?php if ($agregado === null): ?>
-    <p>Ainda não pertences a um agregado familiar.</p>
 
-    <?php if (Yii::$app->user->can('criarAgregado')): ?>
-        <?= Html::a('Criar agregado', ['create'], ['class' => 'btn btn-primary']) ?>
-    <?php endif; ?>
-<?php else: ?>
-    <h1><?= Html::encode($agregado->nome) ?></h1>
+<div class="container py-4">
 
-    <?php if (
-            (int) $agregado->gestor_id === (int) Yii::$app->user->id &&
-            Yii::$app->user->can('editarAgregado')
-    ): ?>
+    <h1 class="h3 fw-bold mb-4">
+        <?= Html::encode($this->title) ?>
+    </h1>
 
-        <?= Html::a(
-                'Editar nome',
-                ['update'],
-                ['class' => 'btn btn-outline-primary mb-3']
-        ) ?>
+    <?php if ($agregado === null): ?>
 
-    <?php endif; ?>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p>Ainda não pertences a um agregado familiar.</p>
 
-    <p>A despensa deste agregado é partilhada pelos seus membros.</p>
+                <?php if (Yii::$app->user->can('criarAgregado')): ?>
+                    <?= Html::a('Criar agregado familiar', ['create'], [
+                            'class' => 'btn btn-primary btn-sm'
+                    ]) ?>
+                <?php endif; ?>
+            </div>
+        </div>
 
-    <?= Html::a('Abrir despensa partilhada', ['/despensa/index'], [
-            'class' => 'btn btn-primary',
-    ]) ?>
+    <?php else: ?>
 
-    <hr>
+        <?php
+        $utilizadorAtual = (int) Yii::$app->user->id;
+        $eGestor = (int) $agregado->gestor_id === $utilizadorAtual;
+        ?>
 
-    <h3>Membros do agregado</h3>
+        <!-- CABEÇALHO DO AGREGADO -->
 
-    <?php
-    $utilizadorAtual = (int) Yii::$app->user->id;
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
 
-    $eGestor = $utilizadorAtual === (int) $agregado->gestor_id;
-    ?>
+                <div class="d-flex justify-content-between
+                            align-items-center flex-wrap gap-3">
 
-    <ul class="list-group mb-4">
+                    <div class="d-flex align-items-center gap-3">
 
-        <?php foreach ($membros as $membro): ?>
+                        <i class="bi bi-people-fill fs-2 text-secondary"></i>
 
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">
+                                <?= Html::encode($agregado->nome) ?>
+                            </h2>
 
-                <div>
-                    <?= Html::encode($membro->username) ?>
+                            <span class="text-muted small">
+                                <?= count($membros) ?>
+                                <?= count($membros) === 1 ? 'membro' : 'membros' ?>
+                            </span>
+                        </div>
 
-                    <?php if ((int) $membro->id === (int) $agregado->gestor_id): ?>
-                        <span class="badge bg-primary ms-2">
-                        Gestor
-                    </span>
-                    <?php endif; ?>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <?php if ($eGestor &&
+                                Yii::$app->user->can('editarAgregado')): ?>
+
+                            <?= Html::a(
+                                    '<i class="bi bi-pencil"></i> Editar nome',
+                                    ['update'],
+                                    ['class' => 'btn btn-outline-secondary btn-sm']
+                            ) ?>
+
+                        <?php endif; ?>
+
+                        <?= Html::a(
+                                '<i class="bi bi-box-seam"></i> Abrir despensa',
+                                ['/despensa/index'],
+                                ['class' => 'btn btn-primary btn-sm']
+                        ) ?>
+
+                    </div>
+
                 </div>
 
-                <?php if (
-                        $eGestor &&
-                        (int) $membro->id !== $utilizadorAtual &&
-                        Yii::$app->user->can('removerMembroAgregado')
-                ): ?>
+            </div>
+        </div>
 
-                    <?= Html::beginForm(
-                            ['remove-member', 'id' => $membro->id],
-                            'post',
-                            [
-                                    'class' => 'd-inline',
-                                    'onsubmit' => "return confirm('Tens a certeza de que queres remover este membro?');",
-                            ]
-                    ) ?>
 
-                    <?= Html::submitButton('Remover', [
-                            'class' => 'btn btn-sm btn-outline-danger',
-                    ]) ?>
+        <!-- MEMBROS DO AGREGADO -->
 
-                    <?= Html::endForm() ?>
+        <div class="d-flex justify-content-between
+                    align-items-center flex-wrap gap-2 mb-3">
+
+            <h3 class="h5 fw-bold mb-0">
+                Membros do agregado
+            </h3>
+
+            <?php if ($eGestor &&
+                    Yii::$app->user->can('adicionarMembroAgregado')): ?>
+
+                <?= Html::a(
+                        '<i class="bi bi-person-plus"></i> Adicionar membro',
+                        ['add-member'],
+                        ['class' => 'btn btn-outline-primary btn-sm']
+                ) ?>
+
+            <?php endif; ?>
+
+        </div>
+
+        <div class="table-responsive mb-3">
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Função</th>
+                    <th class="text-center" style="width: 100px">
+                        Ações
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <?php foreach ($membros as $membro): ?>
+
+                    <?php
+                    $membroEGestor =
+                            (int) $membro->id === (int) $agregado->gestor_id;
+                    ?>
+
+                    <tr>
+
+                        <td>
+                            <?= Html::encode($membro->username) ?>
+                        </td>
+
+                        <td>
+                            <?= Html::encode($membro->email) ?>
+                        </td>
+
+                        <td>
+                            <?php if ($membroEGestor): ?>
+                                <span class="badge bg-primary">
+                                    Gestor
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">
+                                    Membro
+                                </span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="text-center">
+
+                            <?php if (
+                                    $eGestor &&
+                                    !$membroEGestor &&
+                                    Yii::$app->user->can('removerMembroAgregado')
+                            ): ?>
+
+                                <?= Html::beginForm(
+                                        ['remove-member', 'id' => $membro->id],
+                                        'post',
+                                        [
+                                                'class' => 'd-inline',
+                                                'onsubmit' =>
+                                                        "return confirm('Remover este membro do agregado?');"
+                                        ]
+                                ) ?>
+
+                                <?= Html::submitButton(
+                                        '<i class="bi bi-trash"></i>',
+                                        [
+                                                'class' => 'btn btn-outline-danger btn-sm',
+                                                'title' => 'Remover membro',
+                                                'aria-label' => 'Remover membro',
+                                        ]
+                                ) ?>
+
+                                <?= Html::endForm() ?>
+
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
+
+                        </td>
+
+                    </tr>
+
+                <?php endforeach; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- SAIR DO AGREGADO (MEMBRO NORMAL) -->
+
+        <?php if (!$eGestor &&
+                Yii::$app->user->can('sairAgregado')): ?>
+
+            <div class="d-flex justify-content-end mb-4">
+
+                <?= Html::beginForm(
+                        ['leave'],
+                        'post',
+                        [
+                                'onsubmit' =>
+                                        "return confirm('Tens a certeza de que queres sair do agregado?');"
+                        ]
+                ) ?>
+
+                <?= Html::submitButton(
+                        '<i class="bi bi-box-arrow-right"></i> Sair do agregado',
+                        ['class' => 'btn btn-outline-danger btn-sm']
+                ) ?>
+
+                <?= Html::endForm() ?>
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <!-- ÚLTIMAS ALTERAÇÕES -->
+
+        <h3 class="h5 fw-bold mb-3 mt-4">
+            Últimas alterações
+        </h3>
+
+        <div class="table-responsive mb-4">
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>Alteração feita</th>
+                    <th style="width: 170px">Data</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <?php if (empty($historico)): ?>
+
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-3">
+                            Ainda não existem alterações registadas.
+                        </td>
+                    </tr>
+
+                <?php else: ?>
+
+                    <?php foreach ($historico as $movimento): ?>
+
+                        <?php
+                        $anterior = (float) $movimento['quantidade_anterior'];
+                        $nova = (float) $movimento['quantidade_nova'];
+
+                        $diferenca = round($nova - $anterior, 2);
+
+                        $quantidade = number_format(
+                                abs($diferenca), 2, ',', '.'
+                        );
+
+                        $quantidade = rtrim(
+                                rtrim($quantidade, '0'), ','
+                        );
+
+                        $nomeItem = $movimento['nome_item'];
+                        $nomeUtilizador = $movimento['nome_utilizador'];
+                        $unidade = trim((string) $movimento['unidade']);
+
+                        $quantidadeTexto = $quantidade;
+
+                        if ($unidade !== '' && $unidade !== 'un') {
+                            $quantidadeTexto .= ' ' . $unidade . ' de';
+                        }
+
+                        $ePrimeiroMovimento =
+                                (int) $movimento['id_movimento'] ===
+                                (int) $movimento['primeiro_movimento_id'];
+
+                        if (
+                                $ePrimeiroMovimento &&
+                                $anterior == 0 &&
+                                $nova > 0
+                        ) {
+                            $descricao = $nomeUtilizador .
+                                    ' criou o item ' .
+                                    $nomeItem .
+                                    ' (' . $quantidadeTexto . ')';
+
+                        } elseif ($diferenca > 0) {
+                            $descricao = $nomeUtilizador .
+                                    ' adicionou ' .
+                                    $quantidadeTexto . ' ' . $nomeItem;
+
+                        } elseif ($diferenca < 0) {
+                            $descricao = $nomeUtilizador .
+                                    ' retirou ' .
+                                    $quantidadeTexto . ' ' . $nomeItem;
+
+                        } else {
+                            $descricao = $nomeUtilizador .
+                                    ' ajustou a quantidade de ' . $nomeItem;
+                        }
+                        ?>
+
+                        <tr>
+
+                            <td>
+                                <?= Html::encode($nomeUtilizador) ?>
+                            </td>
+
+                            <td>
+                                <?= Html::encode($descricao) ?>
+                            </td>
+
+                            <td>
+                                <?= Yii::$app->formatter->asDatetime(
+                                        $movimento['data_movimento'],
+                                        'php:d/m/Y H:i'
+                                ) ?>
+                            </td>
+
+                        </tr>
+
+                    <?php endforeach; ?>
 
                 <?php endif; ?>
 
-            </li>
+                </tbody>
 
-        <?php endforeach; ?>
+            </table>
 
-    </ul>
+        </div>
 
-    <?php if ($eGestor && Yii::$app->user->can('adicionarMembroAgregado')): ?>
 
-        <?= Html::a(
-                'Adicionar membro',
-                ['add-member'],
-                ['class' => 'btn btn-primary']
-        ) ?>
+        <!-- ELIMINAR AGREGADO (GESTOR) -->
 
-    <?php elseif (!$eGestor && Yii::$app->user->can('sairAgregado')): ?>
+        <?php if ($eGestor &&
+                Yii::$app->user->can('eliminarAgregado')): ?>
 
-        <?= Html::beginForm(
-                ['leave'],
-                'post',
-                [
-                        'onsubmit' => "return confirm('Tens a certeza de que queres sair do agregado familiar?');",
-                ]
-        ) ?>
+            <div class="border border-danger rounded p-3 mt-4">
 
-        <?= Html::submitButton('Sair do agregado', [
-                'class' => 'btn btn-outline-danger',
-        ]) ?>
+                <div class="d-flex justify-content-between
+                            align-items-center flex-wrap gap-3">
 
-        <?= Html::endForm() ?>
+                    <div>
 
-    <?php endif; ?>
+                        <h4 class="h6 text-danger fw-bold mb-2">
+                            <i class="bi bi-trash"></i>
+                            Eliminar agregado familiar
+                        </h4>
 
-    <?php if (
-            $eGestor &&
-            Yii::$app->user->can('eliminarAgregado')
-    ): ?>
+                        <p class="text-muted small mb-0">
+                            Esta ação é permanente. A despensa familiar,
+                            os seus itens e o histórico serão eliminados.
+                            As despensas pessoais serão preservadas.
+                        </p>
 
-        <hr class="my-4">
+                    </div>
 
-        <h4 class="text-danger">Eliminar agregado familiar</h4>
+                    <?= Html::beginForm(
+                            ['delete'],
+                            'post',
+                            [
+                                    'onsubmit' =>
+                                            "return confirm('Eliminar permanentemente o agregado e todos os seus itens familiares?');"
+                            ]
+                    ) ?>
 
-        <p class="text-muted">
-            Esta ação é permanente. Todos os membros serão removidos
-            do agregado e a despensa familiar, incluindo os seus itens
-            e histórico, será eliminada.
-            As despensas pessoais serão preservadas.
-        </p>
+                    <?= Html::submitButton(
+                            'Eliminar agregado',
+                            ['class' => 'btn btn-danger btn-sm']
+                    ) ?>
 
-        <?= Html::beginForm(
-                ['delete'],
-                'post',
-                [
-                        'onsubmit' =>
-                                "return confirm('Tens a certeza de que queres eliminar o agregado familiar? Esta ação é irreversível e apagará todos os itens e movimentos da despensa familiar.');",
-                ]
-        ) ?>
+                    <?= Html::endForm() ?>
 
-        <?= Html::submitButton('Eliminar agregado', [
-                'class' => 'btn btn-danger',
-        ]) ?>
+                </div>
 
-        <?= Html::endForm() ?>
+            </div>
+
+        <?php endif; ?>
 
     <?php endif; ?>
-<?php endif; ?>
+
+</div>

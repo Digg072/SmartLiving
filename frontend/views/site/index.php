@@ -1,136 +1,160 @@
 <?php
 
 use yii\helpers\Html;
-
-/** @var yii\web\View $this */
+use yii\helpers\Url;
 
 $this->title = 'SmartLiving';
 
+//Descrições das funcionalidades
+$funcionalidades = [
+        [
+                'icone' => 'bi-box-seam',
+                'titulo' => 'Gestão da Despensa',
+                'descricao' => 'Organiza os produtos, as quantidades e as categorias da tua despensa.',
+        ],
+        [
+                'icone' => 'bi-calendar-check',
+                'titulo' => 'Controlo de Validades',
+                'descricao' => 'Identifica os produtos próximos do prazo de validade e evita desperdícios.',
+        ],
+        [
+                'icone' => 'bi-people',
+                'titulo' => 'Agregado Familiar',
+                'descricao' => 'Partilha a gestão da despensa com os membros do teu agregado familiar.',
+        ],
+];
 ?>
 
-<div class="site-index">
+<div class="home-page">
 
-    <!-- Hero da Modern Business -->
-    <header class="bg-dark py-5 rounded-3">
-        <div class="container px-5">
-            <div class="row gx-5 justify-content-center">
+    <div class="container">
 
-                <div class="col-lg-10">
-                    <div class="text-center my-5">
+        <!-- SECÇÃO PRINCIPAL -->
 
-                        <h1 class="display-5 fw-bolder text-white mb-3">
-                            Bem-vindo ao SmartLiving
-                        </h1>
+        <section class="home-hero">
 
-                        <p class="lead fw-normal text-white-50 mb-4">
-                            Gere os produtos da tua despensa,
-                            acompanha as quantidades e
-                            controla as datas de validade.
-                        </p>
+            <div class="row align-items-center g-5">
+
+                <!-- TEXTO -->
+
+                <div class="col-lg-6">
+
+                    <span class="home-label">
+                        GESTÃO INTELIGENTE DA DESPENSA
+                    </span>
+
+                    <h1 class="home-title">
+                        A tua despensa,
+                        <span>sempre organizada.</span>
+                    </h1>
+
+                    <p class="home-description">
+                        Organiza os teus alimentos, controla as quantidades
+                        e acompanha os prazos de validade.
+                        Tudo num só lugar, de forma simples e prática.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-3 mt-4">
 
                         <?php if (Yii::$app->user->isGuest): ?>
 
-                            <div class="d-grid gap-3 d-sm-flex
-                                        justify-content-sm-center">
+                            <?= Html::a(
+                                    'Iniciar sessão',
+                                    ['/site/login'],
+                                    ['class' => 'btn btn-success home-button']
+                            ) ?>
 
-                                <?= Html::a(
-                                        'Começar agora',
-                                        ['/site/signup'],
-                                        ['class' => 'btn btn-primary btn-lg px-4']
-                                ) ?>
-
-                                <?= Html::a(
-                                        'Entrar',
-                                        ['/site/login'],
-                                        ['class' => 'btn btn-outline-light btn-lg px-4']
-                                ) ?>
-
-                            </div>
+                            <?= Html::a(
+                                    'Criar conta',
+                                    ['/site/signup'],
+                                    ['class' => 'btn btn-outline-success home-button']
+                            ) ?>
 
                         <?php else: ?>
 
-                            <p class="text-white">
-                                Olá,
-                                <?= Html::encode(
-                                        Yii::$app->user->identity->username
-                                ) ?>!
-                            </p>
+                            <?= Html::a(
+                                    'A minha despensa',
+                                    ['/despensa/index'],
+                                    ['class' => 'btn btn-success home-button']
+                            ) ?>
+
+                            <?= Html::a(
+                                    'Agregado familiar',
+                                    ['/agregado/index'],
+                                    ['class' => 'btn btn-outline-success home-button']
+                            ) ?>
 
                         <?php endif; ?>
 
                     </div>
+
+                </div>
+
+                <!-- IMAGEM PRINCIPAL -->
+
+                <div class="col-lg-6">
+
+                    <div class="home-image-wrapper">
+
+                        <?= Html::img(
+                                Url::to('@web/images/hero-despensa.jpg'),
+                                [
+                                        'class' => 'home-main-image',
+                                        'alt' => 'Organização de alimentos numa despensa',
+                                ]
+                        ) ?>
+
+                    </div>
+
                 </div>
 
             </div>
-        </div>
-    </header>
 
-    <!-- Funcionalidades -->
-    <section class="py-5" id="funcionalidades">
+        </section>
 
-        <div class="container px-4">
-            <h2 class="fw-bolder mb-5 text-center">
-                O que podes fazer no SmartLiving?
-            </h2>
 
-            <div class="row gx-5">
+        <!-- TRÊS FUNCIONALIDADES -->
 
-                <div class="col-lg-4 mb-5">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body p-4">
+        <section class="home-features">
 
-                            <h3 class="h5 fw-bold">
-                                Gestão da Despensa
+            <div class="row g-4">
+
+                <?php foreach ($funcionalidades as $funcionalidade): ?>
+
+                    <div class="col-md-4">
+
+                        <div class="home-feature">
+
+                            <div class="home-feature-icon">
+
+                                <i class="bi <?= Html::encode(
+                                        $funcionalidade['icone']
+                                ) ?>"></i>
+
+                            </div>
+
+                            <h3>
+                                <?= Html::encode(
+                                        $funcionalidade['titulo']
+                                ) ?>
                             </h3>
 
-                            <p class="text-muted mb-0">
-                                Organiza os produtos, as
-                                quantidades e as categorias
-                                da tua despensa.
+                            <p>
+                                <?= Html::encode(
+                                        $funcionalidade['descricao']
+                                ) ?>
                             </p>
 
                         </div>
+
                     </div>
-                </div>
 
-                <div class="col-lg-4 mb-5">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body p-4">
-
-                            <h3 class="h5 fw-bold">
-                                Controlo de Validades
-                            </h3>
-
-                            <p class="text-muted mb-0">
-                                Identifica os produtos
-                                próximos do prazo de validade
-                                e evita desperdícios.
-                            </p>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 mb-5">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body p-4">
-
-                            <h3 class="h5 fw-bold">
-                                Agregado Familiar
-                            </h3>
-
-                            <p class="text-muted mb-0">
-                                Partilha a gestão da despensa
-                                com os membros do teu
-                                agregado familiar.
-                            </p>
-
-                        </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
 
             </div>
-        </div>
-    </section>
+
+        </section>
+
+    </div>
 
 </div>

@@ -8,9 +8,15 @@ use yii\helpers\Html;
     <div class="container px-5">
 
         <?= Html::a(
-                'SmartLiving',
+                Html::img(
+                        \yii\helpers\Url::to('@web/images/logo-smartliving.png'),
+                        [
+                                'alt' => 'SmartLiving',
+                                'class' => 'smartliving-logo',
+                        ]
+                ),
                 ['/site/index'],
-                ['class' => 'navbar-brand fw-bold']
+                ['class' => 'navbar-brand d-flex align-items-center']
         ) ?>
 
         <button class="navbar-toggler" type="button"

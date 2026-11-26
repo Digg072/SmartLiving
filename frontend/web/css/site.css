@@ -50,10 +50,10 @@ a.desc:after {
     margin: 0 0 15px 0;
 }
 
-/* align navbar brand baseline with nav links */
+/* Keep brand and links vertically centered, regardless of image height */
 .navbar > .container,
 .navbar > .container-fluid {
-    align-items: baseline;
+    align-items: center;
 }
 
 /* style navbar logout link color, hover state, and mobile layout */
@@ -265,8 +265,8 @@ a.desc:after {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 20% 80%, rgba(241, 138, 42, .25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(131, 201, 51, .2) 0%, transparent 40%);
+            radial-gradient(circle at 20% 80%, rgba(241, 138, 42, .25) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(131, 201, 51, .2) 0%, transparent 40%);
     pointer-events: none;
 }
 
@@ -389,9 +389,9 @@ a.desc:after {
     inset: 0;
     border-radius: inherit;
     background:
-        radial-gradient(circle at 15% 85%, rgba(241, 138, 42, .3) 0%, transparent 45%),
-        radial-gradient(circle at 85% 15%, rgba(131, 201, 51, .25) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(64, 179, 216, .15) 0%, transparent 60%);
+            radial-gradient(circle at 15% 85%, rgba(241, 138, 42, .3) 0%, transparent 45%),
+            radial-gradient(circle at 85% 15%, rgba(131, 201, 51, .25) 0%, transparent 40%),
+            radial-gradient(ellipse at 50% 50%, rgba(64, 179, 216, .15) 0%, transparent 60%);
     pointer-events: none;
 }
 
@@ -418,4 +418,310 @@ a.desc:after {
 
 [data-bs-theme="dark"] .extension-card:hover {
     box-shadow: 0 0 0 1px var(--bs-border-color), 0 8px 24px rgba(0, 0, 0, .4) !important;
+}
+
+/* SMARTLIVING - PÁGINA INICIAL
+   Styles are scoped to .home-page so the existing template is unaffected.
+*/
+
+/* Brand image in navbar: apply at every screen width (not just mobile) */
+.smartliving-logo {
+    display: block;
+    width: auto;
+    height: 54px;
+    max-width: 175px;
+    object-fit: contain;
+}
+
+.navbar .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Layout */
+.home-page {
+    width: 100%;
+    padding: 24px 0 60px;
+    --smartliving-orange: #f87f02;
+    --smartliving-orange-hover: #df7200;
+}
+
+.home-page > .container {
+    width: 100%;
+    max-width: 1180px;
+}
+
+.home-page .home-hero {
+    padding: 35px 0 60px;
+}
+
+.home-page .home-label {
+    display: inline-block;
+    color: var(--smartliving-orange);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 18px;
+}
+
+.home-page .home-title {
+    font-size: clamp(2.1rem, 3.6vw, 3.5rem);
+    font-weight: 750;
+    line-height: 1.14;
+    letter-spacing: -1px;
+    color: var(--bs-body-color);
+    margin-bottom: 20px;
+}
+
+.home-page .home-title span {
+    color: var(--smartliving-orange);
+}
+
+.home-page .home-description {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--bs-secondary-color);
+    max-width: 530px;
+}
+
+.home-page .home-button {
+    min-width: 142px;
+    padding: 10px 20px;
+    font-size: 0.925rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* Buttons: override Bootstrap success colors on the home page only */
+.home-page .btn-success {
+    background-color: var(--smartliving-orange);
+    border-color: var(--smartliving-orange);
+    color: #fff;
+}
+
+.home-page .btn-success:hover,
+.home-page .btn-success:focus-visible {
+    background-color: var(--smartliving-orange-hover);
+    border-color: var(--smartliving-orange-hover);
+    color: #fff;
+}
+
+.home-page .btn-outline-success {
+    color: var(--smartliving-orange);
+    border-color: var(--smartliving-orange);
+}
+
+.home-page .btn-outline-success:hover,
+.home-page .btn-outline-success:focus-visible {
+    background-color: var(--smartliving-orange);
+    border-color: var(--smartliving-orange);
+    color: #fff;
+}
+
+/* Main graphic: keep the whole user-supplied composition visible */
+.home-page .home-image-wrapper {
+    width: 100%;
+    max-width: 540px;
+    margin-left: auto;
+    overflow: hidden;
+    border-radius: 14px;
+    background-color: var(--bs-body-bg);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .075);
+}
+
+.home-page .home-main-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 430px;
+    object-fit: contain;
+}
+
+/* Features */
+.home-page .home-features {
+    padding-top: 32px;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.home-page .home-feature {
+    height: 100%;
+    padding: 24px 18px;
+    text-align: center;
+    border-radius: 12px;
+    transition: transform .2s ease;
+}
+
+.home-page .home-feature:hover {
+    transform: translateY(-4px);
+}
+
+.home-page .home-feature-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 14px;
+    background-color: #fff0e1;
+    color: var(--smartliving-orange);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.home-page .home-feature-icon i {
+    font-size: 30px;
+}
+
+.home-page .home-feature h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    margin-bottom: 12px;
+}
+
+.home-page .home-feature p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0;
+}
+
+/* SmartLiving: acrescentar ao FINAL de frontend/web/css/site.css.
+   Estilos limitados às duas páginas para não afetar os restantes CRUDs. */
+
+.sl-auth {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.sl-auth .sl-auth-card {
+    width: 100%;
+    max-width: 430px;
+    padding: 2.25rem 2rem;
+    border: 1px solid var(--bs-border-color, #dedede);
+    border-radius: 12px;
+    background: var(--bs-body-bg, #fff);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .06);
+}
+
+.sl-auth .sl-auth-subtitle,
+.sl-auth .sl-auth-footer {
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: .9rem;
+}
+
+.sl-auth .form-label {
+    font-size: .9rem;
+    font-weight: 600;
+    margin-bottom: .4rem;
+}
+
+.sl-auth .mb-3,
+.sl-auth .field-loginform-username,
+.sl-auth .field-loginform-password,
+.sl-auth .field-signupform-username,
+.sl-auth .field-signupform-email,
+.sl-auth .field-signupform-password {
+    margin-bottom: 1rem;
+}
+
+.sl-auth .form-control {
+    min-height: 44px;
+    border-radius: 6px;
+    background-color: var(--bs-body-bg, #fff);
+}
+
+.sl-auth .form-control:focus {
+    border-color: #f87f02;
+    box-shadow: 0 0 0 .2rem rgba(248, 127, 2, .15);
+}
+
+.sl-auth .sl-auth-remember {
+    margin: 1rem 0 1.25rem;
+    font-size: .875rem;
+}
+
+.sl-auth .form-check-input:checked {
+    background-color: #f87f02;
+    border-color: #f87f02;
+}
+
+.sl-auth .sl-auth-button {
+    padding: .7rem 1rem;
+    border: 1px solid #f87f02;
+    border-radius: 6px;
+    background: #f87f02;
+    color: #fff;
+    font-weight: 600;
+}
+
+.sl-auth .sl-auth-button:hover,
+.sl-auth .sl-auth-button:focus-visible {
+    background: #d96e00;
+    border-color: #d96e00;
+    color: #fff;
+}
+
+.sl-auth a:not(.btn) {
+    color: #c86600;
+    text-decoration: none;
+}
+
+.sl-auth a:not(.btn):hover {
+    text-decoration: underline;
+}
+
+.sl-auth .sl-auth-links {
+    font-size: .8rem;
+    line-height: 1.7;
+}
+
+.sl-auth .sl-auth-separator {
+    margin: 0 .35rem;
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.sl-auth .sl-auth-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+@media (max-width: 575px) {
+    .sl-auth .sl-auth-card {
+        padding: 1.75rem 1.25rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .home-page .home-hero {
+        padding: 25px 0 45px;
+    }
+
+    .home-page .home-image-wrapper {
+        margin: 0 auto;
+    }
+
+    .home-page .home-description {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .smartliving-logo {
+        height: 44px;
+        max-width: 140px;
+    }
+
+    .home-page {
+        padding: 12px 0 35px;
+    }
+
+    .home-page .home-title {
+        font-size: 2.15rem;
+    }
+
+    .home-page .home-feature {
+        padding: 16px 12px;
+    }
 }

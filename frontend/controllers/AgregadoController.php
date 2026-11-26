@@ -68,13 +68,16 @@ class AgregadoController extends \yii\web\Controller
 
     public function actionIndex()
     {
-        $agregado = AgregadoFamiliar::doUtilizador(
-            (int) Yii::$app->user->id
-        );
+        $utilizadorId = (int) Yii::$app->user->id;
+
+        $agregado = AgregadoFamiliar::doUtilizador($utilizadorId);
 
         $membros = [];
+        $historico = [];
 
         if ($agregado !== null) {
+
+            // Membros do agregado
             $idsMembros = MembroAgregado::find()
                 ->select('utilizador_id')
                 ->where(['agregado_id' => $agregado->id]);
@@ -83,11 +86,56 @@ class AgregadoController extends \yii\web\Controller
                 ->where(['id' => $idsMembros])
                 ->orderBy(['username' => SORT_ASC])
                 ->all();
+
+            // Despensa familiar
+            $despensa = \common\models\Despensa::find()
+                ->where(['agregado_id' => $agregado->id])
+                ->one();
+
+            if ($despensa !== null) {
+
+                // Últimos 10 movimentos da despensa familiar
+                $historico = (new \yii\db\Query())
+                    ->select([
+                        'm.quantidade_anterior',
+                        'm.quantidade_nova',
+                        'm.data_movimento',
+                        'nome_item' => 'i.nome',
+                        'unidade' => 'i.unidade',
+                        'nome_utilizador' => 'u.username',
+                        'id_movimento' => 'm.id',
+
+                        'primeiro_movimento_id' => new \yii\db\Expression(
+                            '(SELECT MIN(m2.id)
+                              FROM {{%movimentos_stocks}} m2
+                              WHERE m2.item_id = m.item_id)'
+                        ),
+                    ])
+                    ->from('movimentos_stocks m')
+                    ->innerJoin(
+                        'itens_despensa i',
+                        'i.id = m.item_id'
+                    )
+                    ->innerJoin(
+                        '{{%user}} u',
+                        'u.id = m.utilizador_id'
+                    )
+                    ->where([
+                        'i.despensa_id' => $despensa->id
+                    ])
+                    ->orderBy([
+                        'm.data_movimento' => SORT_DESC,
+                        'm.id' => SORT_DESC,
+                    ])
+                    ->limit(10)
+                    ->all();
+            }
         }
 
         return $this->render('index', [
             'agregado' => $agregado,
             'membros' => $membros,
+            'historico' => $historico,
         ]);
     }
 

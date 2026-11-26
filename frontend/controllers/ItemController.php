@@ -132,6 +132,17 @@ class ItemController extends Controller
                         }
                     } else {
                         $mensagem = 'Item criado com sucesso.';
+
+                        Yii::$app->db->createCommand()->insert(
+                            '{{%movimentos_stocks}}',
+                            [
+                                'item_id' => $model->id,
+                                'utilizador_id' => Yii::$app->user->id,
+                                'quantidade_anterior' => 0,
+                                'quantidade_nova' => $model->quantidade,
+                                'data_movimento' => date('Y-m-d H:i:s'),
+                            ]
+                        )->execute();
                     }
 
                     Yii::$app->session->setFlash(
