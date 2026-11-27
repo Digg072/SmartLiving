@@ -213,37 +213,37 @@ class AgregadoFamiliar extends \yii\db\ActiveRecord
                     }
                 }
 
-                // Obter as despensas que pertencem ao agregado.
-                $despensaIds = Despensa::find()
-                    ->select('id')
+                // Obter as despensas do agregado.
+                $despensas = Despensa::find()
                     ->where(['agregado_id' => $agregadoId])
-                    ->column();
+                    ->all();
 
-                foreach ($despensaIds as $despensaId) {
-                    $despensaId = (int) $despensaId;
+                foreach ($despensas as $despensa) {
 
-                    // Apagar movimentos dos itens familiares.
-                    $db->createCommand(
-                        'DELETE FROM {{%movimentos_stocks}}
-                     WHERE item_id IN (
-                         SELECT id
-                         FROM {{%itens_despensa}}
-                         WHERE despensa_id = :despensa
-                     )',
-                        [':despensa' => $despensaId]
-                    )->execute();
+                    // Consultar os IDs dos itens da despensa.
+                    $itemIds = ItemDespensa::find()
+                        ->select('id')
+                        ->where(['despensa_id' => $despensa->id])
+                        ->column();
 
-                    // Apagar itens familiares.
-                    $db->createCommand()->delete(
-                        '{{%itens_despensa}}',
-                        ['despensa_id' => $despensaId]
-                    )->execute();
+                    // Eliminar os movimentos dos itens familiares.
+                    if (!empty($itemIds)) {
+                        MovimentoStock::deleteAll([
+                            'item_id' => $itemIds,
+                        ]);
+                    }
 
-                    // Apagar a despensa familiar.
-                    $db->createCommand()->delete(
-                        '{{%despensas}}',
-                        ['id' => $despensaId]
-                    )->execute();
+                    // Eliminar os itens familiares.
+                    ItemDespensa::deleteAll([
+                        'despensa_id' => $despensa->id,
+                    ]);
+
+                    // Eliminar a despensa familiar.
+                    if ($despensa->delete() !== 1) {
+                        throw new \RuntimeException(
+                            'Não foi possível eliminar a despensa familiar.'
+                        );
+                    }
                 }
 
                 // Remover as associações dos membros.

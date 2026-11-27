@@ -9,7 +9,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
-use yii\db\Query;
+use common\models\ItemDespensa;
 
 /**
  * CategoriaController implements the CRUD actions for Categoria model.
@@ -141,8 +141,7 @@ class CategoriaController extends Controller
     {
         $model = $this->findModel($id);
 
-        $temItens = (new Query())
-            ->from('itens_despensa')
+        $temItens = ItemDespensa::find()
             ->where(['categoria_id' => $model->id])
             ->exists();
 

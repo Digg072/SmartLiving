@@ -5,6 +5,7 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\User;
+use Yii;
 
 /**
  * UserSearch represents the model behind the search form of `common\models\User`.
@@ -15,11 +16,14 @@ class UserSearch extends User
      * {@inheritdoc}
      */
 
+    public $role_name;
+
     public function rules(): array
     {
         return [
             [['id', 'status', 'created_at', 'updated_at'], 'integer'],
             [['username', 'email'], 'safe'],
+            [['role_name'], 'safe'],
         ];
     }
 
@@ -68,6 +72,14 @@ class UserSearch extends User
 
         $query->andFilterWhere(['like', 'username', $this->username])
             ->andFilterWhere(['like', 'email', $this->email]);
+
+        if ($this->role_name !== null && $this->role_name !== '') {
+
+            $ids = Yii::$app->authManager
+                ->getUserIdsByRole($this->role_name);
+
+            $query->andWhere(['id' => $ids]);
+        }
 
         return $dataProvider;
     }

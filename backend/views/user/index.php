@@ -5,6 +5,7 @@ use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\grid\SerialColumn;
 use yii\helpers\Html;
+use yii\helpers\ArrayHelper;
 
 /** @var yii\web\View $this */
 /** @var backend\models\UserSearch $searchModel */
@@ -40,40 +41,65 @@ $this->title = 'Gestão de Utilizadores';
                     'email:email',
 
                     [
-                            'label' => 'Cargos',
+                            'attribute' => 'role_name',
+                            'label' => 'Role',
                             'format' => 'raw',
                             'value' => function ($model) {
                                 $roles = Yii::$app->authManager
                                         ->getRolesByUser($model->id);
 
-                                $badges = array_map(function ($role) {
-                                    return \yii\helpers\Html::tag(
+                                $badges = [];
+
+                                foreach ($roles as $role) {
+                                    $badges[] = Html::tag(
                                             'span',
-                                            \yii\helpers\Html::encode($role->name),
+                                            Html::encode($role->name),
                                             ['class' => 'badge bg-primary me-1']
                                     );
-                                }, $roles);
+                                }
 
-                                return $badges
-                                        ? implode(' ', $badges)
-                                        : 'Sem cargos';
+                                return empty($badges)
+                                        ? 'Sem role'
+                                        : implode(' ', $badges);
                             },
+                            'filter' => ArrayHelper::map(
+                                    Yii::$app->authManager->getRoles(),
+                                    'name',
+                                    'name'
+                            ),
                     ],
                     [
                             'attribute' => 'status',
+                            'label' => 'Estado',
                             'value' => function ($model) {
-                                return $model->status === User::STATUS_ACTIVE
-                                        ? 'Ativo'
-                                        : 'Inativo';
+                                return match ((int) $model->status) {
+                                    10 => 'Ativo',
+                                    9 => 'Inativo',
+                                    0 => 'Eliminado',
+                                    default => 'Desconhecido',
+                                };
                             },
                             'filter' => [
-                                    User::STATUS_ACTIVE => 'Ativo',
-                                    User::STATUS_INACTIVE => 'Inativo',
+                                    10 => 'Ativo',
+                                    9 => 'Inativo',
+                                    0 => 'Eliminado',
                             ],
                     ],
-
-
-                    ['class' => ActionColumn::class],
+                    [
+                            'class' => ActionColumn::class,
+                            'visibleButtons' => [
+                                    'view' => function ($model) {
+                                        return Yii::$app->user->can('consultarUtilizadores');
+                                    },
+                                    'update' => function ($model) {
+                                        return Yii::$app->user->can('editarUtilizador');
+                                    },
+                                    'delete' => function ($model) {
+                                        return Yii::$app->user->can('eliminarUtilizador')
+                                                && (int) $model->status !== 0;
+                                    },
+                            ],
+                    ]
             ],
     ]) ?>
 

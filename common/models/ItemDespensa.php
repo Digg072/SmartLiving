@@ -192,18 +192,13 @@ class ItemDespensa extends \yii\db\ActiveRecord
                         );
                     }
 
-                    // Guardar no histórico de stock
-                    $db->createCommand()->insert(
-                        '{{%movimentos_stocks}}',
-                        [
-                            'item_id' => $existente->id,
-                            'utilizador_id' => $utilizadorId,
-                            'quantidade_anterior' => $anterior,
-                            'quantidade_nova' => $nova,
-                            'data_movimento' =>
-                                new \yii\db\Expression('NOW()'),
-                        ]
-                    )->execute();
+                    // Guardar no histórico através do ActiveRecord.
+                    MovimentoStock::registar(
+                        (int) $existente->id,
+                        $utilizadorId,
+                        $anterior,
+                        $nova
+                    );
                 }
 
                 $transacao->commit();
@@ -221,6 +216,14 @@ class ItemDespensa extends \yii\db\ActiveRecord
                     'Não foi possível criar o item.'
                 );
             }
+
+            // Registar a criação inicial do item.
+            MovimentoStock::registar(
+                (int) $novo->id,
+                $utilizadorId,
+                '0.00',
+                $novo->quantidade
+            );
 
             $transacao->commit();
 

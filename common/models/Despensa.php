@@ -87,33 +87,37 @@ class Despensa extends \yii\db\ActiveRecord
 
     public static function obterAtivaPara(int $userId): ?self
     {
-        // Garantir que a despensa pessoal existe
+        // Garantir que existe uma despensa pessoal.
         $despensaPessoal = self::garantirPessoal($userId);
 
-        // Verificar se pertence a um agregado familiar
-        $agregadoId = (new \yii\db\Query())
-            ->select('agregado_id')
-            ->from('{{%membros_agregado}}')
-            ->where(['utilizador_id' => $userId])
-            ->scalar();
+        // Verificar se o utilizador pertence a um agregado.
+        $membro = MembroAgregado::findOne([
+            'utilizador_id' => $userId,
+        ]);
 
-        // Verificar também se é gestor
-        if ($agregadoId === false) {
-            $agregadoId = (new \yii\db\Query())
-                ->select('id')
-                ->from('{{%agregados_familiares}}')
-                ->where(['gestor_id' => $userId])
-                ->scalar();
+        $agregadoId = $membro !== null
+            ? (int) $membro->agregado_id
+            : null;
+
+        // Verificar também se é gestor de um agregado.
+        if ($agregadoId === null) {
+            $agregado = AgregadoFamiliar::findOne([
+                'gestor_id' => $userId,
+            ]);
+
+            if ($agregado !== null) {
+                $agregadoId = (int) $agregado->id;
+            }
         }
 
-        // Se pertence a um agregado, usa a despensa familiar
-        if ($agregadoId !== false) {
-            return self::find()
-                ->where(['agregado_id' => $agregadoId])
-                ->one();
+        // Se pertence a um agregado, utilizar a despensa familiar.
+        if ($agregadoId !== null) {
+            return self::findOne([
+                'agregado_id' => $agregadoId,
+            ]);
         }
 
-        // Caso contrário, usa a despensa pessoal
+        // Caso contrário, utilizar a despensa pessoal.
         return $despensaPessoal;
     }
 }

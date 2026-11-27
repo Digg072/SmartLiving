@@ -9,6 +9,10 @@ use frontend\models\AdicionarMembroForm;
 use common\models\MembroAgregado;
 use common\models\User;
 use yii\web\ForbiddenHttpException;
+use common\models\Despensa;
+use common\models\ItemDespensa;
+use common\models\MovimentoStock;
+use yii\db\Expression;
 
 class AgregadoController extends \yii\web\Controller
 {
@@ -77,7 +81,7 @@ class AgregadoController extends \yii\web\Controller
 
         if ($agregado !== null) {
 
-            // Membros do agregado
+            // Consultar os membros através de ActiveRecord.
             $idsMembros = MembroAgregado::find()
                 ->select('utilizador_id')
                 ->where(['agregado_id' => $agregado->id]);
@@ -87,48 +91,86 @@ class AgregadoController extends \yii\web\Controller
                 ->orderBy(['username' => SORT_ASC])
                 ->all();
 
-            // Despensa familiar
-            $despensa = \common\models\Despensa::find()
+            // Obter a despensa familiar.
+            $despensa = Despensa::find()
                 ->where(['agregado_id' => $agregado->id])
                 ->one();
 
             if ($despensa !== null) {
 
-                // Últimos 10 movimentos da despensa familiar
-                $historico = (new \yii\db\Query())
-                    ->select([
-                        'm.quantidade_anterior',
-                        'm.quantidade_nova',
-                        'm.data_movimento',
-                        'nome_item' => 'i.nome',
-                        'unidade' => 'i.unidade',
-                        'nome_utilizador' => 'u.username',
-                        'id_movimento' => 'm.id',
+                // Obter apenas os IDs dos itens desta despensa.
+                $itemIds = ItemDespensa::find()
+                    ->select('id')
+                    ->where(['despensa_id' => $despensa->id])
+                    ->column();
 
-                        'primeiro_movimento_id' => new \yii\db\Expression(
-                            '(SELECT MIN(m2.id)
-                              FROM {{%movimentos_stocks}} m2
-                              WHERE m2.item_id = m.item_id)'
-                        ),
-                    ])
-                    ->from('movimentos_stocks m')
-                    ->innerJoin(
-                        'itens_despensa i',
-                        'i.id = m.item_id'
-                    )
-                    ->innerJoin(
-                        '{{%user}} u',
-                        'u.id = m.utilizador_id'
-                    )
-                    ->where([
-                        'i.despensa_id' => $despensa->id
-                    ])
-                    ->orderBy([
-                        'm.data_movimento' => SORT_DESC,
-                        'm.id' => SORT_DESC,
-                    ])
-                    ->limit(10)
-                    ->all();
+                if (!empty($itemIds)) {
+
+                    // Últimos movimentos da despensa familiar.
+                    $movimentos = MovimentoStock::find()
+                        ->where(['item_id' => $itemIds])
+                        ->with(['item', 'utilizador'])
+                        ->orderBy([
+                            'data_movimento' => SORT_DESC,
+                            'id' => SORT_DESC,
+                        ])
+                        ->limit(10)
+                        ->all();
+
+                    // Descobrir quais os primeiros movimentos
+                    // dos itens apresentados no histórico.
+                    $idsComMovimentos = array_unique(
+                        array_map(
+                            fn($movimento) => (int) $movimento->item_id,
+                            $movimentos
+                        )
+                    );
+
+                    $primeirosIds = [];
+
+                    if (!empty($idsComMovimentos)) {
+                        $primeiros = MovimentoStock::find()
+                            ->select([
+                                'item_id',
+                                'primeiro_id' => new Expression('MIN(id)'),
+                            ])
+                            ->where(['item_id' => $idsComMovimentos])
+                            ->groupBy('item_id')
+                            ->asArray()
+                            ->all();
+
+                        foreach ($primeiros as $primeiro) {
+                            $primeirosIds[(int) $primeiro['item_id']] =
+                                (int) $primeiro['primeiro_id'];
+                        }
+                    }
+
+                    // Preparar os dados para a vista atual.
+                    foreach ($movimentos as $movimento) {
+
+                        $item = $movimento->item;
+                        $utilizador = $movimento->utilizador;
+
+                        if ($item === null || $utilizador === null) {
+                            continue;
+                        }
+
+                        $historico[] = [
+                            'id_movimento' => $movimento->id,
+                            'primeiro_movimento_id' =>
+                                $primeirosIds[(int) $movimento->item_id] ?? null,
+                            'quantidade_anterior' =>
+                                $movimento->quantidade_anterior,
+                            'quantidade_nova' =>
+                                $movimento->quantidade_nova,
+                            'data_movimento' =>
+                                $movimento->data_movimento,
+                            'nome_item' => $item->nome,
+                            'unidade' => $item->unidade,
+                            'nome_utilizador' => $utilizador->username,
+                        ];
+                    }
+                }
             }
         }
 

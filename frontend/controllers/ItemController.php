@@ -11,6 +11,7 @@ use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use common\models\MovimentoStock;
 
 class ItemController extends Controller
 {
@@ -132,17 +133,6 @@ class ItemController extends Controller
                         }
                     } else {
                         $mensagem = 'Item criado com sucesso.';
-
-                        Yii::$app->db->createCommand()->insert(
-                            '{{%movimentos_stocks}}',
-                            [
-                                'item_id' => $model->id,
-                                'utilizador_id' => Yii::$app->user->id,
-                                'quantidade_anterior' => 0,
-                                'quantidade_nova' => $model->quantidade,
-                                'data_movimento' => date('Y-m-d H:i:s'),
-                            ]
-                        )->execute();
                     }
 
                     Yii::$app->session->setFlash(
@@ -200,13 +190,13 @@ class ItemController extends Controller
             $model->categoria_id
         );
 
-        $movimentos = (new \yii\db\Query())
-            ->from('{{%movimentos_stocks}}')
+        $movimentos = MovimentoStock::find()
             ->where(['item_id' => $model->id])
             ->orderBy([
                 'data_movimento' => SORT_DESC,
                 'id' => SORT_DESC,
             ])
+            ->asArray()
             ->all();
 
         return $this->render('view', [
@@ -270,16 +260,12 @@ class ItemController extends Controller
                         (float) $quantidadeAnterior
                         != (float) $model->quantidade
                     ) {
-                        Yii::$app->db->createCommand()->insert(
-                            '{{%movimentos_stocks}}',
-                            [
-                                'item_id' => $model->id,
-                                'utilizador_id' => Yii::$app->user->id,
-                                'quantidade_anterior' => $quantidadeAnterior,
-                                'quantidade_nova' => $model->quantidade,
-                                'data_movimento' => new \yii\db\Expression('NOW()'),
-                            ]
-                        )->execute();
+                        MovimentoStock::registar(
+                            (int) $model->id,
+                            (int) Yii::$app->user->id,
+                            $quantidadeAnterior,
+                            $model->quantidade
+                        );
                     }
 
                     $transaction->commit();

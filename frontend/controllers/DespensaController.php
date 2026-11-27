@@ -6,7 +6,6 @@ use Yii;
 use common\models\Despensa;
 use common\models\ItemDespensa;
 use common\models\Categoria;
-use yii\db\Query;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 
@@ -45,7 +44,6 @@ class DespensaController extends Controller
             ? 'Familiar'
             : 'Pessoal';
 
-
         $opcoesOrdenacao = [
             'categoria_az' => 'Categoria — A–Z',
             'categoria_za' => 'Categoria — Z–A',
@@ -55,51 +53,112 @@ class DespensaController extends Controller
             'nome_za' => 'Nome do item — Z–A',
         ];
 
-        $ordenacao = Yii::$app->request->get('ordenar', 'categoria_az');
+        $ordenacao = Yii::$app->request->get(
+            'ordenar',
+            'categoria_az'
+        );
 
-        if (!is_string($ordenacao) || !isset($opcoesOrdenacao[$ordenacao])) {
+        if (
+            !is_string($ordenacao) ||
+            !isset($opcoesOrdenacao[$ordenacao])
+        ) {
             $ordenacao = 'categoria_az';
         }
 
-        $porCategoria = in_array($ordenacao, ['categoria_az', 'categoria_za'], true);
-        $porValidade = in_array($ordenacao, ['validade_asc', 'validade_desc'], true);
+        $porCategoria = in_array(
+            $ordenacao,
+            ['categoria_az', 'categoria_za'],
+            true
+        );
+
+        $porValidade = in_array(
+            $ordenacao,
+            ['validade_asc', 'validade_desc'],
+            true
+        );
+
+        $categorias = Categoria::find()
+            ->indexBy('id')
+            ->all();
 
         $itens = [];
 
         if ($despensa !== null) {
-            $query = ItemDespensa::find()
-                ->alias('i')
-                ->select('i.*')
-                ->where(['i.despensa_id' => $despensa->id]);
 
-            if ($porCategoria) {
-                $query->leftJoin(['c' => '{{%categorias}}'], 'c.id = i.categoria_id')
-                    ->orderBy([
-                        'c.nome' => $ordenacao === 'categoria_za' ? SORT_DESC : SORT_ASC,
-                        'c.id' => SORT_ASC,
-                        'i.nome' => SORT_ASC,
-                    ]);
-            } elseif ($porValidade) {
-                $query->orderBy(new \yii\db\Expression('i.validade IS NULL'))
+            $query = ItemDespensa::find()
+                ->where(['despensa_id' => $despensa->id]);
+
+            // Ordenação por validade.
+            if ($porValidade) {
+                $query
+                    ->orderBy(
+                        new \yii\db\Expression('validade IS NULL')
+                    )
                     ->addOrderBy([
-                        'i.validade' => $ordenacao === 'validade_desc' ? SORT_DESC : SORT_ASC,
-                        'i.nome' => SORT_ASC,
+                        'validade' => $ordenacao === 'validade_desc'
+                            ? SORT_DESC
+                            : SORT_ASC,
+                        'nome' => SORT_ASC,
                     ]);
-            } else {
+            }
+
+            // Ordenação por nome.
+            elseif (!$porCategoria) {
                 $query->orderBy([
-                    'i.nome' => $ordenacao === 'nome_za' ? SORT_DESC : SORT_ASC,
+                    'nome' => $ordenacao === 'nome_za'
+                        ? SORT_DESC
+                        : SORT_ASC,
                 ]);
             }
 
             $itens = $query->all();
+
+            // Ordenação por nome da categoria, sem JOIN.
+            if ($porCategoria) {
+
+                usort($itens, function ($a, $b) use (
+                    $categorias,
+                    $ordenacao
+                ) {
+                    $nomeCategoriaA =
+                        $categorias[(int) $a->categoria_id]->nome
+                        ?? 'Sem categoria';
+
+                    $nomeCategoriaB =
+                        $categorias[(int) $b->categoria_id]->nome
+                        ?? 'Sem categoria';
+
+                    $comparacao = strcasecmp(
+                        $nomeCategoriaA,
+                        $nomeCategoriaB
+                    );
+
+                    if ($ordenacao === 'categoria_za') {
+                        $comparacao = -$comparacao;
+                    }
+
+                    if ($comparacao !== 0) {
+                        return $comparacao;
+                    }
+
+                    // Manter os produtos da mesma categoria juntos.
+                    $comparacao = (int) $a->categoria_id
+                        <=> (int) $b->categoria_id;
+
+                    if ($comparacao !== 0) {
+                        return $comparacao;
+                    }
+
+                    // Dentro da categoria, ordenar pelo nome do item.
+                    return strcasecmp($a->nome, $b->nome);
+                });
+            }
         }
 
-        $hoje = new \DateTimeImmutable('today', new \DateTimeZone('Europe/Lisbon'));
-
-        // Categorias para apresentar os nomes dos itens
-        $categorias = Categoria::find()
-            ->indexBy('id')
-            ->all();
+        $hoje = new \DateTimeImmutable(
+            'today',
+            new \DateTimeZone('Europe/Lisbon')
+        );
 
         return $this->render('index', [
             'despensa' => $despensa,
@@ -110,7 +169,9 @@ class DespensaController extends Controller
             'opcoesOrdenacao' => $opcoesOrdenacao,
             'porCategoria' => $porCategoria,
             'hoje' => $hoje->format('Y-m-d'),
-            'limiteAviso' => $hoje->modify('+3 days')->format('Y-m-d'),
+            'limiteAviso' => $hoje
+                ->modify('+3 days')
+                ->format('Y-m-d'),
         ]);
     }
 }

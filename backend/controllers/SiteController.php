@@ -13,6 +13,10 @@ use yii\web\ErrorAction;
 use yii\web\Response;
 use common\models\User;
 use yii\db\Query;
+use common\models\AgregadoFamiliar;
+use common\models\ItemDespensa;
+use common\models\Categoria;
+use yii\db\Expression;
 
 /**
  * Site controller
@@ -68,35 +72,48 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        // Total de utilizadores não eliminados
         $totalUtilizadores = User::find()
             ->where(['<>', 'status', User::STATUS_DELETED])
             ->count();
 
-        // Total de agregados familiares
-        $totalAgregados = (new Query())
-            ->from('agregados_familiares')
-            ->count();
+        $totalAgregados = AgregadoFamiliar::find()->count();
 
-        // Total de itens registados nas despensas
-        $totalItens = (new Query())
-            ->from('itens_despensa')
-            ->count();
+        $totalItens = ItemDespensa::find()->count();
 
-        // Número de itens associados a cada categoria
-        $estatisticasCategorias = (new Query())
+        // Contar itens por categoria através do ActiveRecord.
+        $contagens = ItemDespensa::find()
             ->select([
-                'categoria' => 'c.nome',
-                'total' => 'COUNT(i.id)',
+                'categoria_id',
+                'total' => new Expression('COUNT(*)'),
             ])
-            ->from(['c' => 'categorias'])
-            ->leftJoin(
-                ['i' => 'itens_despensa'],
-                'i.categoria_id = c.id'
-            )
-            ->groupBy(['c.id', 'c.nome'])
-            ->orderBy(['total' => SORT_DESC])
+            ->groupBy('categoria_id')
+            ->asArray()
             ->all();
+
+        $totaisPorCategoria = [];
+
+        foreach ($contagens as $contagem) {
+            $totaisPorCategoria[(int) $contagem['categoria_id']] =
+                (int) $contagem['total'];
+        }
+
+        // Obter todas as categorias, incluindo as que não têm itens.
+        $categorias = Categoria::find()->all();
+
+        $estatisticasCategorias = [];
+
+        foreach ($categorias as $categoria) {
+            $estatisticasCategorias[] = [
+                'categoria' => $categoria->nome,
+                'total' => $totaisPorCategoria[(int) $categoria->id] ?? 0,
+            ];
+        }
+
+        // Ordenar pela quantidade de itens, do maior para o menor.
+        usort($estatisticasCategorias, function ($a, $b) {
+            return ($b['total'] <=> $a['total'])
+                ?: strcasecmp($a['categoria'], $b['categoria']);
+        });
 
         return $this->render('index', [
             'totalUtilizadores' => $totalUtilizadores,
