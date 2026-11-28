@@ -79,15 +79,11 @@ use yii\helpers\Html;
                     </li>
 
                     <li class="nav-item">
-                        <span class="nav-link">
-                            Histórico
-                        </span>
-                    </li>
-
-                    <li class="nav-item">
-                        <span class="nav-link">
-                            Perfil
-                        </span>
+                        <?= Html::a(
+                                'Meu Perfil',
+                                ['/perfil/index'],
+                                ['class' => 'nav-link']
+                        ) ?>
                     </li>
 
                     <li class="nav-item ms-lg-3">

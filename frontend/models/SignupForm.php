@@ -9,6 +9,7 @@ use Yii;
 use yii\base\Model;
 use yii\mail\MailerInterface;
 use common\models\Despensa;
+use common\models\UserProfile;
 
 /**
  * Signup form
@@ -18,6 +19,7 @@ class SignupForm extends Model
     public string $username = '';
     public string $email = '';
     public string $password = '';
+    public $nome;
     /**
      * {@inheritdoc}
      */
@@ -37,6 +39,10 @@ class SignupForm extends Model
 
             ['password', 'required'],
             ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+
+            [['nome'], 'trim'],
+            [['nome'], 'required'],
+            [['nome'], 'string', 'max' => 150],
         ];
     }
 
@@ -67,6 +73,18 @@ class SignupForm extends Model
 
         if (!$user->save()) {
             return false;
+        }
+
+        $perfil = new UserProfile();
+
+        $perfil->user_id = $user->id;
+        $perfil->nome = $this->nome;
+        $perfil->telefone = null;
+
+        if (!$perfil->save()) {
+            throw new \RuntimeException(
+                'Não foi possível criar o perfil do utilizador.'
+            );
         }
 
         // Atribuir a role de utilizador após criar a conta.

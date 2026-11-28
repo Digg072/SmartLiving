@@ -21,9 +21,17 @@ $this->params['meta_description'] = 'Cria uma conta SmartLiving para gerir a tua
 
         <?php $form = ActiveForm::begin(['id' => 'form-signup']); ?>
 
-        <?= $form->field($model, 'username')
+        <?= $form->field($model, 'nome')
                 ->textInput([
                         'autofocus' => true,
+                        'maxlength' => true,
+                        'autocomplete' => 'name',
+                        'placeholder' => 'O teu nome completo',
+                ])
+                ->label('Nome de Utilizador') ?>
+
+        <?= $form->field($model, 'username')
+                ->textInput([
                         'autocomplete' => 'username',
                         'placeholder' => 'Nome de utilizador',
                 ])
